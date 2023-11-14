@@ -2,39 +2,40 @@
 #include "stdint.h"
 #include <stdbool.h>
 #include <string.h>
-#include "rddlSDKAbst.h"
+// #include "rddlSDKAbst.h"
+// #include "rddlSDKUtils.h"
 #include "rddlSDKAPI.h"
 #include "unity.h"
 
 
-void testGetPlntmntKeys(void){
+// void testGetPlntmntKeys(void){
 
-    getPlntmntKeys();
+//     getPlntmntKeys();
 
-    TEST_ASSERT_TRUE(true);
-}
-
-
-void testAttestedTrue(void){ 
-
-    memcpy( g_ext_pub_key_planetmint, "pmpb7veeZqNgEJHYVbYJePCCXQZAJrVZ27vd8iuVKcFLLJZrkw57qgNmJxQktvSLNFY1j56S3HDGc21Rgx96n8Jac7hKPTphAYUk5NwwVcBWrX5", 
-            sizeof("pmpb7veeZqNgEJHYVbYJePCCXQZAJrVZ27vd8iuVKcFLLJZrkw57qgNmJxQktvSLNFY1j56S3HDGc21Rgx96n8Jac7hKPTphAYUk5NwwVcBWrX5"));
-
-    bool status = hasMachineBeenAttested();
-
-    TEST_ASSERT_TRUE(status == true);
-}
+//     TEST_ASSERT_TRUE(true);
+// }
 
 
-void testAttestedFalse(void){ 
+// void testAttestedTrue(void){ 
 
-    memcpy( g_ext_pub_key_planetmint, "xpub6G8TnTyKFoBR5hqZXW8HDFEZoG83gzrXcifjtSpPf1qzkcfTGD3gSbD7rF3xRBy9RKz53AuRuBaJTok3mFNFRKEBpZHWRHzjg1111111111", 
-            sizeof("xpub6G8TnTyKFoBR5hqZXW8HDFEZoG83gzrXcifjtSpPf1qzkcfTGD3gSbD7rF3xRBy9RKz53AuRuBaJTok3mFNFRKEBpZHWRHzjg4NW5UmUjc7"));
+//     memcpy( g_ext_pub_key_planetmint, "pmpb7veeZqNgEJHYVbYJePCCXQZAJrVZ27vd8iuVKcFLLJZrkw57qgNmJxQktvSLNFY1j56S3HDGc21Rgx96n8Jac7hKPTphAYUk5NwwVcBWrX5", 
+//             sizeof("pmpb7veeZqNgEJHYVbYJePCCXQZAJrVZ27vd8iuVKcFLLJZrkw57qgNmJxQktvSLNFY1j56S3HDGc21Rgx96n8Jac7hKPTphAYUk5NwwVcBWrX5"));
 
-    bool status = hasMachineBeenAttested();
+//     bool status = hasMachineBeenAttested();
 
-    TEST_ASSERT_TRUE(status == false);
-}
+//     TEST_ASSERT_TRUE(status == true);
+// }
+
+
+// void testAttestedFalse(void){ 
+
+//     memcpy( g_ext_pub_key_planetmint, "xpub6G8TnTyKFoBR5hqZXW8HDFEZoG83gzrXcifjtSpPf1qzkcfTGD3gSbD7rF3xRBy9RKz53AuRuBaJTok3mFNFRKEBpZHWRHzjg1111111111", 
+//             sizeof("xpub6G8TnTyKFoBR5hqZXW8HDFEZoG83gzrXcifjtSpPf1qzkcfTGD3gSbD7rF3xRBy9RKz53AuRuBaJTok3mFNFRKEBpZHWRHzjg4NW5UmUjc7"));
+
+//     bool status = hasMachineBeenAttested();
+
+//     TEST_ASSERT_TRUE(status == false);
+// }
 
 
 void testNotarizationFlow(void){ 

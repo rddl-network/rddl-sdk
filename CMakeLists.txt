@@ -11,7 +11,7 @@ set(CMAKE_BUILD_TYPE Debug)
 add_subdirectory(libs/librddl)
 
 # Create a library from your source files (excluding test/main.c)
-add_library(rddlSDK STATIC src/rddlSDKAbst.c src/rddlSDKAPI.c)
+add_library(rddlSDK STATIC src/platform/linux/rddlSDKAbst.c src/rddlSDKUtils.c src/rddlSDKAPI.c)
 
 # Link with the librddl library
 target_link_libraries(rddlSDK RDDLC protobuf-c)
