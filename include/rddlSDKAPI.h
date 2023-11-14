@@ -1,1 +1,1 @@
-void signRDDLNetworkMessageContent( const char* data_str, size_t data_length, char* sig_out);
+void runRDDLNotarizationWorkflow(const char* data_str, size_t data_length);

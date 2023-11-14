@@ -1,0 +1,23 @@
+{
+    "name": "rddl-sdk",
+    "keywords": "rddl-sdk, librddl",
+    "description": "Use librddl to connect rddl network, prepare transaction, make registirations",
+    "repository":
+    {
+      "type": "git",
+      "url": "https://github.com/rddl-network/rddl-sdk.git"
+    },
+    "authors":
+    [
+      {
+        "name": "Fatih Asagidag",
+        "email": "fatih.asagidag@riddleandcode.com",
+        "maintainer": true
+      }
+    ],
+    "build": {
+        "srcDir": ".",
+        "srcFilter": "+<*> -<src/platform/linux> -<test/*>"
+    },
+    "version": "0.1.0"
+  }

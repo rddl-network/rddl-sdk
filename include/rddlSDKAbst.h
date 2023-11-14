@@ -13,8 +13,7 @@
 
 
 /* MAKE IT GENERIC */
-#define printMsg printf
-
+#define printMsg printf 
 
 extern uint8_t g_priv_key_planetmint[32+1];
 extern uint8_t g_priv_key_liquid[32+1];

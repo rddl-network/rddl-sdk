@@ -1,6 +1,7 @@
 #include <stdbool.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <stdarg.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <string.h>
@@ -145,11 +146,13 @@ int readfile( const char* filename, uint8_t* content, size_t length){
 }
 
 
-/* MAKE IT GENERIC */
-/* Cozemedim */
-int ResponseAppend_P(const char* format, ...)  // Content send snprintf_P char data
+int ResponseAppend_P(const char* format, ...)   
 {
-  return 0;
+    va_list args;
+    va_start(args, format);
+    int result = vprintf(format, args);
+    va_end(args);
+    return result;
 }
 
 
