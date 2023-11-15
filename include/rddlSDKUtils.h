@@ -1,4 +1,7 @@
-int broadcast_transaction( char* tx_payload );
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 char* create_transaction( void* anyMsg, char* tokenAmount );
 uint8_t* readSeed();
 void getPlntmntKeys();
@@ -9,3 +12,7 @@ char* getDenom();
 char* getChainID();
 void setAccountID( const char* account, size_t len);
 char* getAccountID();
+
+#ifdef __cplusplus
+}
+#endif

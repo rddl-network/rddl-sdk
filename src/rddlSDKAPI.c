@@ -11,7 +11,6 @@
 #include "rddl_cid.h"
 #include "bip32.h"
 #include "curves.h"
-#include "base64.h"
 #include "secp256k1.h"
 
 #include "rddl_types.h"
@@ -56,7 +55,7 @@ void runRDDLNotarizationWorkflow(const char* data_str, size_t data_length){
     printMsg("Notarize: CID Asset\n");
     // ResponseAppend_P("Notarize: CID Asset %s\n", cid_str);
 
-    generateAnyCIDAttestMsg(&anyMsg, cid_str, g_priv_key_planetmint, g_pub_key_planetmint, g_address, g_ext_pub_key_planetmint );
+    generateAnyCIDAttestMsg(&anyMsg, cid_str, sdk_priv_key_planetmint, sdk_pub_key_planetmint, sdk_address, sdk_ext_pub_key_planetmint );
     free(cid_str);
   }
   else{

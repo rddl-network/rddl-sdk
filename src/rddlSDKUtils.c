@@ -10,8 +10,8 @@
 #include "rddl.h"
 #include "rddl_cid.h"
 #include "bip32.h"
-#include "curves.h"
 #include "base64.h"
+#include "curves.h"
 #include "secp256k1.h"
 
 #include "rddl_types.h"
@@ -27,38 +27,6 @@
 #include "rddlSDKUtils.h"
 
 
-/* MAKE IT GENERIC */
-/* Cozemedim */
-int broadcast_transaction( char* tx_payload ){
-  const char* curlCommand = "curl -X POST";
-  char url[4096];
-  snprintf(url, sizeof(url), "%s/cosmos/tx/v1beta1/txs", getPlanetmintAPI());
-  const char* headers = "-H \"accept: application/json\" -H \"Content-Type: application/json\"";
-  
-  char curlCmd[8192];
-  snprintf(curlCmd, sizeof(curlCmd), "%s \"%s\" %s -d '%s'", curlCommand, url, headers, tx_payload);
-  printf("\n%s\n", curlCmd);
-
-  static char curlOutput[1024];
-  FILE* pipe = popen(curlCmd, "r");
-
-  if (!pipe) {
-      perror("popen");
-      return false;
-  }
-
-  while (fgets(curlOutput, sizeof(curlOutput), pipe) != NULL) {
-      printf("CURL RESPONSE:\n%s\n", curlOutput);
-  }
-
-  pclose(pipe);
-
-  return 0;
-}
-
-
-/* MAKE IT GENERIC */
-/* Cozemedim */
 char* create_transaction( void* anyMsg, char* tokenAmount )
 {
   uint64_t account_id = 0;
@@ -76,7 +44,7 @@ char* create_transaction( void* anyMsg, char* tokenAmount )
   uint8_t* txbytes = NULL;
   size_t tx_size = 0;
   char* chain_id = getChainID();
-  int ret = prepareTx( (Google__Protobuf__Any*)anyMsg, &coin, g_priv_key_planetmint, g_pub_key_planetmint, sequence, chain_id, account_id, &txbytes, &tx_size);
+  int ret = prepareTx( (Google__Protobuf__Any*)anyMsg, &coin, sdk_priv_key_planetmint, sdk_pub_key_planetmint, sequence, chain_id, account_id, &txbytes, &tx_size);
   if( ret < 0 )
     return NULL;
 
@@ -98,7 +66,7 @@ char* create_transaction( void* anyMsg, char* tokenAmount )
 
 uint8_t* readSeed()
 {
-  if( g_readSeed )
+  if( sdk_readSeed )
     return secret_seed;
 
   // int readbytes = readfile( "seed", secret_seed, SEED_SIZE);
@@ -108,7 +76,7 @@ uint8_t* readSeed()
   if( readbytes != SEED_SIZE )
     return NULL;
 
-  g_readSeed = true;
+  sdk_readSeed = true;
   return secret_seed;
 }
 
@@ -147,8 +115,8 @@ void getPlntmntKeys(){
   hdnode_private_ckd(&node_planetmint, 0);
   hdnode_fill_public_key(&node_planetmint);
   /* Global e kopyaliyor pub ve priv keyi */
-  memcpy(g_priv_key_planetmint, node_planetmint.private_key, 32);
-  memcpy(g_pub_key_planetmint, node_planetmint.public_key, PUB_KEY_SIZE);
+  memcpy(sdk_priv_key_planetmint, node_planetmint.private_key, 32);
+  memcpy(sdk_pub_key_planetmint, node_planetmint.public_key, PUB_KEY_SIZE);
 
   // char hexBuf[256];
   // toHexString(hexBuf, node_planetmint.public_key, PUB_KEY_SIZE*2);
@@ -164,21 +132,21 @@ void getPlntmntKeys(){
   hdnode_private_ckd(&node_rddl, 0);
   hdnode_fill_public_key(&node_rddl);
   /* Global e kopyaliyor pub ve priv keyi */
-  memcpy(g_priv_key_liquid, node_rddl.private_key, 32);
-  memcpy(g_pub_key_liquid, node_rddl.public_key, PUB_KEY_SIZE);
+  memcpy(sdk_priv_key_liquid, node_rddl.private_key, 32);
+  memcpy(sdk_pub_key_liquid, node_rddl.public_key, PUB_KEY_SIZE);
 
   uint8_t address_bytes[ADDRESS_TAIL] = {0};
-  pubkey2address( g_pub_key_planetmint, PUB_KEY_SIZE, address_bytes );
-  getAddressString( address_bytes, g_address);
+  pubkey2address( sdk_pub_key_planetmint, PUB_KEY_SIZE, address_bytes );
+  getAddressString( address_bytes, sdk_address);
   uint32_t fingerprint = hdnode_fingerprint(&node_planetmint);
-  hdnode_serialize_public( &node_planetmint, fingerprint, PLANETMINT_PMPB, g_ext_pub_key_planetmint, EXT_PUB_KEY_SIZE);
-  hdnode_serialize_public( &node_rddl, fingerprint, VERSION_PUBLIC, g_ext_pub_key_liquid, EXT_PUB_KEY_SIZE);
+  hdnode_serialize_public( &node_planetmint, fingerprint, PLANETMINT_PMPB, sdk_ext_pub_key_planetmint, EXT_PUB_KEY_SIZE);
+  hdnode_serialize_public( &node_rddl, fingerprint, VERSION_PUBLIC, sdk_ext_pub_key_liquid, EXT_PUB_KEY_SIZE);
 
-  // printf("%s\n",g_ext_pub_key_planetmint);
+  // printf("%s\n",sdk_ext_pub_key_planetmint);
 
-  ecdsa_get_public_key33(&secp256k1, private_key_machine_id, g_machineid_public_key);
-  toHexString( g_machineid_public_key_hex, g_machineid_public_key, 33*2);
-  printf("Machine Public Key: %s\n", g_machineid_public_key_hex);
+  ecdsa_get_public_key33(&secp256k1, private_key_machine_id, sdk_machineid_public_key);
+  toHexString( sdk_machineid_public_key_hex, sdk_machineid_public_key, 33*2);
+  printf("Machine Public Key: %s\n", sdk_machineid_public_key_hex);
 }
 
 
@@ -205,7 +173,7 @@ int registerMachine(void* anyMsg){
   char signature_hex[64*2+1]={0};
   uint8_t hash[32];
 
-  bool ret_bool = getMachineIDSignature(  private_key_machine_id,  g_machineid_public_key, signature, hash);
+  bool ret_bool = getMachineIDSignature(  private_key_machine_id,  sdk_machineid_public_key, signature, hash);
   if( ! ret_bool )
   {
     ResponseAppend_P("No machine signature\n");
@@ -229,22 +197,22 @@ int registerMachine(void* anyMsg){
   metadata.device = "{\"Manufacturer\": \"RDDL\",\"Serial\":\"otherserial\"}";
 
   Planetmintgo__Machine__Machine machine = PLANETMINTGO__MACHINE__MACHINE__INIT;
-  machine.name = (char*)g_address;
+  machine.name = (char*)sdk_address;
   machine.ticker = NULL;
   machine.domain = DEFAULT_DOMAIN_TEXT;
   machine.reissue = false;
   machine.amount = 1;
   machine.precision = 8;
-  machine.issuerplanetmint = g_ext_pub_key_planetmint;
-  machine.issuerliquid = g_ext_pub_key_liquid;
-  machine.machineid = g_machineid_public_key_hex;
+  machine.issuerplanetmint = sdk_ext_pub_key_planetmint;
+  machine.issuerliquid = sdk_ext_pub_key_liquid;
+  machine.machineid = sdk_machineid_public_key_hex;
   machine.metadata = &metadata;
   machine.type = RDDL_MACHINE_POWER_SWITCH;
   machine.machineidsignature = signature_hex;
-  machine.address = (char*)g_address;
+  machine.address = (char*)sdk_address;
  
   Planetmintgo__Machine__MsgAttestMachine machineMsg = PLANETMINTGO__MACHINE__MSG_ATTEST_MACHINE__INIT;
-  machineMsg.creator = (char*)g_address;
+  machineMsg.creator = (char*)sdk_address;
   machineMsg.machine = &machine;
   int ret = generateAnyAttestMachineMsg((Google__Protobuf__Any*)anyMsg, &machineMsg);
   if( ret<0 )
@@ -260,40 +228,40 @@ int registerMachine(void* anyMsg){
 void setDenom( const char* denom, size_t len)
 {
   rddl_writefile( "planetmintdenom", (uint8_t*)denom, len);
-  memset((void*)g_denom,0, sizeof(g_denom));
+  memset((void*)sdk_denom,0, sizeof(sdk_denom));
 }
 
 
 char* getDenom()
 {
-  if( strlen( g_denom) == 0 )
-    strcpy(g_denom, DEFAULT_DENOM_TEXT);
-  return g_denom;
+  if( strlen( sdk_denom) == 0 )
+    strcpy(sdk_denom, DEFAULT_DENOM_TEXT);
+  return sdk_denom;
 }
 
 
 char* getChainID()
 {
-  if( strlen( g_chainid) == 0 )
-    strcpy(g_chainid, DEFAULT_CHAINID_TEXT);
+  if( strlen( sdk_chainid) == 0 )
+    strcpy(sdk_chainid, DEFAULT_CHAINID_TEXT);
 
-  return g_chainid;
+  return sdk_chainid;
 }
 
 
 char* getAccountID()
 {
-  if( strlen( g_accountid) == 0 ){
-      int readbytes = readfile( "accountid", (uint8_t*)g_accountid, 20);
+  if( strlen( sdk_accountid) == 0 ){
+      int readbytes = readfile( "accountid", (uint8_t*)sdk_accountid, 20);
     if( readbytes < 0 )
-      memset((void*)g_planetmintapi,0, sizeof(g_planetmintapi));
+      memset((void*)sdk_planetmintapi,0, sizeof(sdk_planetmintapi));
   }
-  return g_accountid;
+  return sdk_accountid;
 }
 
 
 void setAccountID( const char* account, size_t len)
 {
   rddl_writefile( "accountid", (uint8_t*)account, len);
-  memset((void*)g_accountid,0, sizeof(g_accountid));
+  memset((void*)sdk_accountid,0, sizeof(sdk_accountid));
 }

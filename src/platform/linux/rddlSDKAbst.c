@@ -27,24 +27,24 @@
 
 #include "rddlSDKAbst.h"
 
-uint8_t g_priv_key_planetmint[32+1] = {0};
-uint8_t g_priv_key_liquid[32+1] = {0};
-uint8_t g_pub_key_planetmint[33+1] = {0};
-uint8_t g_pub_key_liquid[33+1] = {0};
-uint8_t g_machineid_public_key[33+1]={0}; 
+uint8_t sdk_priv_key_planetmint[32+1] = {0};
+uint8_t sdk_priv_key_liquid[32+1] = {0};
+uint8_t sdk_pub_key_planetmint[33+1] = {0};
+uint8_t sdk_pub_key_liquid[33+1] = {0};
+uint8_t sdk_machineid_public_key[33+1]={0}; 
 
 
-char g_address[64] = {0};
-char g_ext_pub_key_planetmint[EXT_PUB_KEY_SIZE+1] = {0};
-char g_ext_pub_key_liquid[EXT_PUB_KEY_SIZE+1] = {0};
-char g_machineid_public_key_hex[33*2+1] = {0};
+char sdk_address[64] = {0};
+char sdk_ext_pub_key_planetmint[EXT_PUB_KEY_SIZE+1] = {0};
+char sdk_ext_pub_key_liquid[EXT_PUB_KEY_SIZE+1] = {0};
+char sdk_machineid_public_key_hex[33*2+1] = {0};
 
-char g_planetmintapi[100] = {0};
-char g_accountid[20] = {0};
-char g_chainid[30] = {0};
-char g_denom[20] = {0};
+char sdk_planetmintapi[100] = {0};
+char sdk_accountid[20] = {0};
+char sdk_chainid[30] = {0};
+char sdk_denom[20] = {0};
 
-bool g_readSeed = false;
+bool sdk_readSeed = false;
 
 static char curlCmd[256];
 static char curlOutput[1024];
@@ -65,7 +65,7 @@ bool hasMachineBeenAttested() {
   // Construct the cURL command
   snprintf(curlCmd, sizeof(curlCmd),
             "curl -X GET \"https://testnet-api.rddl.io/planetmint/machine/get_machine_by_public_key/%s\" -H \"accept: application/json\"",
-            g_ext_pub_key_planetmint);
+            sdk_ext_pub_key_planetmint);
 
   printf("\n%s\n", curlCmd);
   FILE* pipe = popen(curlCmd, "r");
@@ -176,7 +176,7 @@ bool getAccountInfo( uint64_t* account_id, uint64_t* sequence )
   // Construct the cURL command
   snprintf(curlCmd, sizeof(curlCmd),
             "curl -X GET \"https://testnet-api.rddl.io/cosmos/auth/v1beta1/account_info/%s\" -H \"accept: application/json\"",
-            g_address);
+            sdk_address);
 
   FILE* pipe = popen(curlCmd, "r");
 
@@ -207,5 +207,32 @@ bool getAccountInfo( uint64_t* account_id, uint64_t* sequence )
 }
 
 
+/* MAKE IT GENERIC */
+/* Cozemedim */
+int broadcast_transaction( char* tx_payload ){
+  const char* curlCommand = "curl -X POST";
+  char url[4096];
+  snprintf(url, sizeof(url), "%s/cosmos/tx/v1beta1/txs", getPlanetmintAPI());
+  const char* headers = "-H \"accept: application/json\" -H \"Content-Type: application/json\"";
+  
+  char curlCmd[8192];
+  snprintf(curlCmd, sizeof(curlCmd), "%s \"%s\" %s -d '%s'", curlCommand, url, headers, tx_payload);
+  printf("\n%s\n", curlCmd);
 
+  static char curlOutput[1024];
+  FILE* pipe = popen(curlCmd, "r");
+
+  if (!pipe) {
+      perror("popen");
+      return false;
+  }
+
+  while (fgets(curlOutput, sizeof(curlOutput), pipe) != NULL) {
+      printf("CURL RESPONSE:\n%s\n", curlOutput);
+  }
+
+  pclose(pipe);
+
+  return 0;
+}
 
