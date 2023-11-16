@@ -26,7 +26,7 @@
 #include "rddlSDKAPI.h"
 
 
-void runRDDLNotarizationWorkflow(const char* data_str, size_t data_length){
+void runRDDLSDKNotarizationWorkflow(const char* data_str, size_t data_length){
   Google__Protobuf__Any anyMsg = GOOGLE__PROTOBUF__ANY__INIT;
   clearStack();
   getPlntmntKeys();

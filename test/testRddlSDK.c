@@ -40,7 +40,7 @@
 
 void testNotarizationFlow(void){ 
 
-    runRDDLNotarizationWorkflow("FATIH", sizeof("FATIH"));
+    runRDDLSDKNotarizationWorkflow("FATIH", sizeof("FATIH"));
 
     TEST_ASSERT_TRUE(true);
 }
