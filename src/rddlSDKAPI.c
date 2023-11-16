@@ -26,6 +26,39 @@
 #include "rddlSDKAPI.h"
 
 
+char* sdkSetSeed(char* pMnemonic, size_t len){
+
+  char* mnemonic = NULL;
+  
+  if(len)
+    mnemonic = (char*)setSeed( pMnemonic, len );
+  else{
+    mnemonic = (char*)getMnemonic();
+    mnemonic = (char*)setSeed( mnemonic, strlen(mnemonic) );
+  }  
+
+  storeSeed();
+  return mnemonic;
+}
+
+
+void sdkStoreSeed(char* new_seed){
+  
+  if(new_seed != NULL)
+    memcpy(secret_seed, new_seed, SEED_SIZE);
+  
+  storeSeed();
+}
+
+
+void sdkReadSeed(char* seed_arr, int* seed_size){
+  readSeed();
+
+  memcpy(seed_arr, secret_seed, SEED_SIZE);
+  *seed_size = SEED_SIZE;
+}
+
+
 void runRDDLSDKNotarizationWorkflow(const char* data_str, size_t data_length){
   Google__Protobuf__Any anyMsg = GOOGLE__PROTOBUF__ANY__INIT;
   clearStack();
@@ -56,7 +89,6 @@ void runRDDLSDKNotarizationWorkflow(const char* data_str, size_t data_length){
     // ResponseAppend_P("Notarize: CID Asset %s\n", cid_str);
 
     generateAnyCIDAttestMsg(&anyMsg, cid_str, sdk_priv_key_planetmint, sdk_pub_key_planetmint, sdk_address, sdk_ext_pub_key_planetmint );
-    // free(cid_str);
   }
   else{
     printMsg("Register: Machine\n");

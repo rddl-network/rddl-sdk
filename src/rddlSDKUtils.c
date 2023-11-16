@@ -10,6 +10,7 @@
 #include "rddl.h"
 #include "rddl_cid.h"
 #include "bip32.h"
+#include "base64.h"
 #include "curves.h"  
 #include "secp256k1.h"
 
@@ -60,6 +61,13 @@ char* create_transaction( void* anyMsg, char* tokenAmount )
     ResponseAppend_P("not engouth memory:\n");
 
   return payload;
+}
+
+
+void storeSeed()
+{
+  rddl_writefile( (const char*)"seed", secret_seed, SEED_SIZE );
+  sdk_readSeed = false;
 }
 
 

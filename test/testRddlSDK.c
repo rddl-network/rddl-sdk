@@ -2,45 +2,31 @@
 #include "stdint.h"
 #include <stdbool.h>
 #include <string.h>
-// #include "rddlSDKAbst.h"
-// #include "rddlSDKUtils.h"
 #include "rddlSDKAPI.h"
 #include "unity.h"
 
 
-// void testGetPlntmntKeys(void){
+void testMnemonic(void){
+    char* mnemonic = sdkSetSeed("victory cancel radio rotate all depart mind become axis boost tent ensure", sizeof("victory cancel radio rotate all depart mind become axis boost tent ensure"));
 
-//     getPlntmntKeys();
-
-//     TEST_ASSERT_TRUE(true);
-// }
-
-
-// void testAttestedTrue(void){ 
-
-//     memcpy( g_ext_pub_key_planetmint, "pmpb7veeZqNgEJHYVbYJePCCXQZAJrVZ27vd8iuVKcFLLJZrkw57qgNmJxQktvSLNFY1j56S3HDGc21Rgx96n8Jac7hKPTphAYUk5NwwVcBWrX5", 
-//             sizeof("pmpb7veeZqNgEJHYVbYJePCCXQZAJrVZ27vd8iuVKcFLLJZrkw57qgNmJxQktvSLNFY1j56S3HDGc21Rgx96n8Jac7hKPTphAYUk5NwwVcBWrX5"));
-
-//     bool status = hasMachineBeenAttested();
-
-//     TEST_ASSERT_TRUE(status == true);
-// }
+    TEST_ASSERT_TRUE(!strcmp(mnemonic, "victory cancel radio rotate all depart mind become axis boost tent ensure"));
+}
 
 
-// void testAttestedFalse(void){ 
+void testSeedOperation(void){ 
+    sdkStoreSeed("12345d8b5ee5bcefd523ee4d4340a8956affbef5bb1978eb1e3f640318f87f4b");
 
-//     memcpy( g_ext_pub_key_planetmint, "xpub6G8TnTyKFoBR5hqZXW8HDFEZoG83gzrXcifjtSpPf1qzkcfTGD3gSbD7rF3xRBy9RKz53AuRuBaJTok3mFNFRKEBpZHWRHzjg1111111111", 
-//             sizeof("xpub6G8TnTyKFoBR5hqZXW8HDFEZoG83gzrXcifjtSpPf1qzkcfTGD3gSbD7rF3xRBy9RKz53AuRuBaJTok3mFNFRKEBpZHWRHzjg4NW5UmUjc7"));
+    char seed_arr[128] = {0};
+    int  seed_size = sizeof(seed_arr);
+    sdkReadSeed(seed_arr, &seed_size);
 
-//     bool status = hasMachineBeenAttested();
-
-//     TEST_ASSERT_TRUE(status == false);
-// }
+    TEST_ASSERT_TRUE(!strcmp(seed_arr, "12345d8b5ee5bcefd523ee4d4340a8956affbef5bb1978eb1e3f640318f87f4b"));
+}
 
 
 void testNotarizationFlow(void){ 
 
-    runRDDLSDKNotarizationWorkflow("FATIH", sizeof("FATIH"));
+    runRDDLSDKNotarizationWorkflow("TESTDATA", sizeof("TESTDATA"));
 
     TEST_ASSERT_TRUE(true);
 }
@@ -49,9 +35,8 @@ void testNotarizationFlow(void){
 int main()
 {
     UNITY_BEGIN();
-    //RUN_TEST(getPlntmntKeys);
-    //RUN_TEST(testAttestedTrue);
-    //RUN_TEST(testAttestedFalse);
+    RUN_TEST(testMnemonic);
+    RUN_TEST(testSeedOperation);
     RUN_TEST(testNotarizationFlow);
     return UNITY_END();
 }

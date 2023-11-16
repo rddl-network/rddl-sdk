@@ -5,6 +5,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <string.h>
+#include <errno.h>
  
 #include "planetmint.h"
 #include "rddl.h"
@@ -90,8 +91,6 @@ bool hasMachineBeenAttested() {
 }
 
 
-/* MAKE IT GENERIC */
-/* bir file a content i length kadar yaz */
 bool rddl_writefile( const char* filename, uint8_t* content, size_t length) {
   int fd;
   ssize_t result = -1;
@@ -99,7 +98,8 @@ bool rddl_writefile( const char* filename, uint8_t* content, size_t length) {
 
   strcat(fileExactName, filename);
 
-  if ((fd = open(fileExactName, O_RDWR | O_CREAT | O_EXCL)) == -1){
+  /* If file exist, should I return with O_EXCL, or should I truncate it with O_TRUNC and write new seed? */
+  if ((fd = open(fileExactName, O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH)) == -1){
     printMsg("ERROR rddl_writefile! Couldnt open file %s", fileExactName);
     close(fd);
     return result;
@@ -130,6 +130,7 @@ int readfile( const char* filename, uint8_t* content, size_t length){
 
   if ((fd = open(fileExactName, O_RDONLY)) == -1){
     printMsg("ERROR readfile! Couldnt open file %s", fileExactName);
+    perror("Error");
     close(fd);
     return result;
   }
