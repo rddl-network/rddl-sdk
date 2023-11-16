@@ -1,6 +1,10 @@
 #!/bin/bash
 
-rm -rf build
-mkdir build
-cmake -S . -B build 
-cmake --build build
+# Create build directory if it doesn't exist
+mkdir -p build
+
+# Run CMake to generate build files if necessary
+cmake -S . -B build
+
+# Compile modified files using --parallel flag for faster build
+cmake --build build --parallel $(nproc)

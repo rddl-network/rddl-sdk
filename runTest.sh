@@ -1,3 +1,5 @@
 #!/bin/bash
 
-./build/test/testRddlSDK
+cd build
+./test/testRddlSDK
+cd ..
