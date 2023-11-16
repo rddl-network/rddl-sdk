@@ -10,8 +10,7 @@
 #include "rddl.h"
 #include "rddl_cid.h"
 #include "bip32.h"
-#include "base64.h"
-#include "curves.h"
+#include "curves.h"  
 #include "secp256k1.h"
 
 #include "rddl_types.h"
@@ -69,10 +68,11 @@ uint8_t* readSeed()
   if( sdk_readSeed )
     return secret_seed;
 
-  // int readbytes = readfile( "seed", secret_seed, SEED_SIZE);
-  int readbytes = SEED_SIZE;
-  memcpy(secret_seed, "12345d8b5ee5bcefd523ee4d4340a8956affbef5bb1978eb1e3f640318f87f4b6438733879360f460932fa68bfc06ae8aaf837b5d45891d114a58d8ce19a17d7", SEED_SIZE);
-  
+  int readbytes = readfile( "seed", secret_seed, SEED_SIZE);
+  /* For TEST PURPOSE */
+  // memcpy(secret_seed, "12345d8b5ee5bcefd523ee4d4340a8956affbef5bb1978eb1e3f640318f87f4b6438733879360f460932fa68bfc06ae8aaf837b5d45891d114a58d8ce19a17d7", SEED_SIZE);
+  // int readbytes = SEED_SIZE;
+
   if( readbytes != SEED_SIZE )
     return NULL;
 
