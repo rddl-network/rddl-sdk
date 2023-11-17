@@ -89,7 +89,11 @@ void runRDDLSDKNotarizationWorkflow(const char* data_str, size_t data_length){
     // ResponseAppend_P("Notarize: CID Asset %s\n", cid_str);
 
     generateAnyCIDAttestMsg(&anyMsg, cid_str, sdk_priv_key_planetmint, sdk_pub_key_planetmint, sdk_address, sdk_ext_pub_key_planetmint );
+  
+#ifdef LINUX_MACHINE
     free(cid_str);
+#endif
+  
   }
   else{
     printMsg("Register: Machine\n");
