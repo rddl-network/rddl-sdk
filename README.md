@@ -12,6 +12,10 @@ Need following libraries
 
 # Compilation and Test
 
+This Repository contains submodules so you need to run:
+
+```git submodule update --init --recursive```
+
 Before testing, it is recommended to read chapter 3 of RDDL_SDK.pdf in the docs.
 
 To compile project;
