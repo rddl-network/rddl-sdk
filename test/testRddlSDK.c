@@ -5,22 +5,24 @@
 #include "rddlSDKAPI.h"
 #include "unity.h"
 
+char TEST_SEED[]        = "12345d8b5ee5bcefd523ee4d4340a8956affbef5bb1978eb1e3f640318f87f4b";
+char TEST_MNEMONIC[]    = "victory cancel radio rotate all depart mind become axis boost tent ensure";
 
 void testMnemonic(void){
-    char* mnemonic = sdkSetSeed("victory cancel radio rotate all depart mind become axis boost tent ensure", sizeof("victory cancel radio rotate all depart mind become axis boost tent ensure"));
+    char* mnemonic = sdkSetSeed(TEST_MNEMONIC, sizeof(TEST_MNEMONIC));
 
-    TEST_ASSERT_TRUE(!strcmp(mnemonic, "victory cancel radio rotate all depart mind become axis boost tent ensure"));
+    TEST_ASSERT_TRUE(!strcmp(mnemonic, TEST_MNEMONIC));
 }
 
 
 void testSeedOperation(void){ 
-    sdkStoreSeed("12345d8b5ee5bcefd523ee4d4340a8956affbef5bb1978eb1e3f640318f87f4b");
+    sdkStoreSeed(TEST_SEED);
 
     char seed_arr[128] = {0};
     int  seed_size = sizeof(seed_arr);
     sdkReadSeed(seed_arr, &seed_size);
 
-    TEST_ASSERT_TRUE(!strcmp(seed_arr, "12345d8b5ee5bcefd523ee4d4340a8956affbef5bb1978eb1e3f640318f87f4b"));
+    TEST_ASSERT_TRUE(!strcmp(seed_arr, TEST_SEED));
 }
 
 
