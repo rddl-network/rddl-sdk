@@ -3,62 +3,18 @@
 #include "planetmintgo.h"
 #include "tasmotaUtils.h"
 #include "HttpClientLight.h"
-#ifdef ESP32
-  #include <LittleFS.h>
-  #ifdef USE_SDCARD
-    #include <SD.h>
-  #endif  // USE_SDCARD
-  #include "FFat.h"
-  #include "FS.h"
-#endif  // ESP32
 
 
-uint8_t ffs_type_tasmota;
-FS *ffs_tasmota;
-
-static bool TfsSaveFile(const char *fname, const uint8_t *buf, uint32_t len) {
-  if (!ffs_type_tasmota) { return false; }
-#ifdef USE_WEBCAM
-  WcInterrupt(0);  // Stop stream if active to fix TG1WDT_SYS_RESET
-#endif
-  bool result = false;
-  File file = ffs_tasmota->open(fname, "w");
-  if (!file) {
-    //AddLog(LOG_LEVEL_INFO, PSTR("TFS: Save failed"));
-  } else {
-    // This will timeout on ESP32-webcam
-    // But now solved with WcInterrupt(0) in support_esp.ino
-    file.write(buf, len);
-
-    file.close();
-    result = true;
-  }
-#ifdef USE_WEBCAM
-  WcInterrupt(1);
-#endif
-  return result;
-}
-
-static bool TfsLoadFile(const char *fname, uint8_t *buf, uint32_t len) {
-  if (!ffs_type_tasmota) { return false; }
-
-  File file = ffs_tasmota->open(fname, "r");
-  if (!file) {
-    return false;
-  }
-
-  size_t flen = file.size();
-  if (len > flen) { len = flen; } // Adjust requested length to smaller file length
-  file.read(buf, len);
-  file.close();
-  return true;
-}
+extern bool TfsSaveFile(const char *fname, const uint8_t *buf, uint32_t len);
+extern bool TfsLoadFile(const char *fname, uint8_t *buf, uint32_t len);
+extern int  ResponseAppend_P(const char* format, ...);
 
 
 static const char* getPlanetmintAPI() {
     // Implement your logic to get the API URL here
     return "https://testnet-api.rddl.io";
 }
+
 
 bool hasMachineBeenAttestedTasmota(const char* g_ext_pub_key_planetmint) {
   HTTPClientLight http;
@@ -179,3 +135,6 @@ bool getAccountInfoTasmota( const char* account_address, uint64_t* account_id, u
 }
 
 
+int ResponseAppendAbstTasmota(const char* msg){
+  return ResponseAppend_P(msg);
+}

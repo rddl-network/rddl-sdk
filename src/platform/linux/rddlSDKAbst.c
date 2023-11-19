@@ -50,6 +50,8 @@ bool sdk_readSeed = false;
 static char curlCmd[256];
 static char curlOutput[1024];
 
+char responseArr[4096];
+
 
 const char* getPlanetmintAPI() {
     // Implement your logic to get the API URL here
@@ -100,14 +102,16 @@ bool rddl_writefile( const char* filename, uint8_t* content, size_t length) {
 
   /* If file exist, should I return with O_EXCL, or should I truncate it with O_TRUNC and write new seed? */
   if ((fd = open(fileExactName, O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH)) == -1){
-    printMsg("ERROR rddl_writefile! Couldnt open file %s", fileExactName);
+    sprintf( responseArr, "ERROR rddl_writefile! Couldnt open file %s", fileExactName);
+    printMsg(responseArr);
     close(fd);
     return result;
   }
     
   
   if ((result = write(fd, content, length)) == -1){
-    printMsg("ERROR rddl_writefile! Couldnt write file %s", fileExactName);
+    sprintf( responseArr, "ERROR rddl_writefile! Couldnt write file %s", fileExactName);
+    printMsg(responseArr);
     close(fd);
     return result;
   }
@@ -129,14 +133,16 @@ int readfile( const char* filename, uint8_t* content, size_t length){
   strcat(fileExactName, filename);
 
   if ((fd = open(fileExactName, O_RDONLY)) == -1){
-    printMsg("ERROR readfile! Couldnt open file %s", fileExactName);
+    sprintf( responseArr, "ERROR readfile! Couldnt open file %s", fileExactName);
+    printMsg(responseArr);
     perror("Error");
     close(fd);
     return result;
   }
   
   if ((result = read(fd, content, length)) == -1){
-    printMsg("ERROR readfile! Couldnt read file %s", fileExactName);
+    sprintf( responseArr, "ERROR readfile! Couldnt read file %s", fileExactName);
+    printMsg(responseArr);
     close(fd);
     return result;
   }
@@ -147,13 +153,16 @@ int readfile( const char* filename, uint8_t* content, size_t length){
 }
 
 
-int ResponseAppend_P(const char* format, ...)   
+int printMsg(const char* msg){
+  printf("%s\n", msg);
+  return 0;
+}
+
+
+int ResponseAppendAbst(const char* msg)   
 {
-    va_list args;
-    va_start(args, format);
-    int result = vprintf(format, args);
-    va_end(args);
-    return result;
+  printf("%s\n", msg);
+  return 0;
 }
 
 
@@ -161,7 +170,7 @@ int ResponseAppend_P(const char* format, ...)
 /* Cozemedim */
 int ResponseJsonEnd(void)
 {
-  return ResponseAppend_P(PSTR("}}"));
+  return ResponseAppendAbst(PSTR("}}"));
 }
 
 
@@ -201,8 +210,10 @@ bool getAccountInfo( uint64_t* account_id, uint64_t* sequence )
     *account_id = (uint64_t) _account_id;
     *sequence = (uint64_t) _sequence;
   }
-  else
-    ResponseAppend_P("Account parsing issue\n");
+  else{
+    sprintf( responseArr, "Account parsing issue\n");
+    printMsg(responseArr);
+  }
 
   return ret;
 }

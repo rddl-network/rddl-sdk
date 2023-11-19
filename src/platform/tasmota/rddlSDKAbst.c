@@ -50,6 +50,7 @@ bool sdk_readSeed = false;
 static char curlCmd[256];
 static char curlOutput[1024];
 
+char responseArr[4096];
 
 bool hasMachineBeenAttested() {
   bool status = hasMachineBeenAttestedTasmota((const char*)sdk_ext_pub_key_planetmint);
@@ -72,15 +73,15 @@ int readfile( const char* filename, uint8_t* content, size_t length){
 }
 
 
-int ResponseAppend_P(const char* format, ...)  // Content send snprintf_P char data
+int ResponseAppendAbst(const char* msg) 
 {
-  return 1;
+  return ResponseAppendAbstTasmota(msg);
 }
 
 
 int ResponseJsonEnd(void)
 {
-  return ResponseAppend_P(PSTR("}}"));
+  return ResponseAppendAbst(PSTR("}}"));
 }
 
 
@@ -92,8 +93,10 @@ char* getGPSstring(){
 bool getAccountInfo( uint64_t* account_id, uint64_t* sequence )
 {
   bool ret = getAccountInfoTasmota(sdk_address, account_id, sequence);
-  if( !ret )
-    ResponseAppend_P("Account parsing issue\n");
+  if( !ret ){
+    sprintf(responseArr, "Account parsing issue\n");
+    ResponseAppendAbst(responseArr);
+  }
 
   return ret;
 }
@@ -104,8 +107,10 @@ int broadcast_transaction( char* tx_payload ){
   char http_answr[512];
   int status = broadcastTransactionTasmota(tx_payload, http_answr);
 
-  ResponseAppend_P(PSTR(",\"%s\":\"%u\"\n"), "respose code", status);
-  ResponseAppend_P(PSTR(",\"%s\":\"%s\"\n"), "respose string", http_answr);
+  sprintf(responseArr, PSTR(",\"%s\":\"%u\"\n"), "respose code", status);
+  ResponseAppendAbst(responseArr);
+  sprintf(responseArr, PSTR(",\"%s\":\"%s\"\n"), "respose string", http_answr);
+  ResponseAppendAbst(responseArr);
 
   return status;
 }

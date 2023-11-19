@@ -10,7 +10,11 @@
 #include "rddl.h"
 #include "rddl_cid.h"
 #include "bip32.h"
-#include "base64.h"
+#ifdef LINUX_MACHINE
+  #include "base64.h"
+#else
+  #include "base64_plntmnt.h"
+#endif
 #include "curves.h"  
 #include "secp256k1.h"
 
@@ -57,8 +61,10 @@ char* create_transaction( void* anyMsg, char* tokenAmount )
     bintob64( payload+ strlen( payload ), txbytes, tx_size);
     strcpy( payload+ strlen( payload ), "\", \"mode\": \"BROADCAST_MODE_SYNC\" }");
   }
-  else
-    ResponseAppend_P("not engouth memory:\n");
+  else{
+    sprintf(responseArr, "not engouth memory:\n");
+    ResponseAppendAbst(responseArr);
+  }
 
   return payload;
 }
@@ -167,9 +173,12 @@ void signRDDLNetworkMessageContent( const char* data_str, size_t data_length, ch
   }
 
   /* Bunlar PlatformIO Specific */
-  ResponseAppend_P(PSTR(",\"%s\":\"%s\"\n"), "Hash", hash_out);
-  ResponseAppend_P(PSTR(",\"%s\":\"%s\"\n"), "Signature", sig_out);
-  ResponseAppend_P(PSTR(",\"%s\":\"%s\"\n"), "PublicKey", pubkey_out);
+  sprintf(responseArr, PSTR(",\"%s\":\"%s\"\n"), "Hash", hash_out);
+  ResponseAppendAbst(responseArr);
+  sprintf(responseArr, PSTR(",\"%s\":\"%s\"\n"), "Signature", sig_out);
+  ResponseAppendAbst(responseArr);
+  sprintf(responseArr, PSTR(",\"%s\":\"%s\"\n"), "PublicKey", pubkey_out);
+  ResponseAppendAbst(responseArr);
 }
 
 
@@ -184,7 +193,8 @@ int registerMachine(void* anyMsg){
   bool ret_bool = getMachineIDSignature(  private_key_machine_id,  sdk_machineid_public_key, signature, hash);
   if( ! ret_bool )
   {
-    ResponseAppend_P("No machine signature\n");
+    sprintf(responseArr, "No machine signature\n");
+    ResponseAppendAbst(responseArr);
     return -1;
   }
   
@@ -225,7 +235,8 @@ int registerMachine(void* anyMsg){
   int ret = generateAnyAttestMachineMsg((Google__Protobuf__Any*)anyMsg, &machineMsg);
   if( ret<0 )
   {
-    ResponseAppend_P("No Attestation message\n");
+    sprintf(responseArr, "No Attestation message\n");
+    ResponseAppendAbst(responseArr);
     return -1;
   }
 

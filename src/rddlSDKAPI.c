@@ -85,8 +85,8 @@ void runRDDLSDKNotarizationWorkflow(const char* data_str, size_t data_length){
     // register CID
     // registerCID( cid_str );
   
-    printMsg("Notarize: CID Asset\n");
-    // ResponseAppend_P("Notarize: CID Asset %s\n", cid_str);
+    sprintf(responseArr, "Notarize: CID Asset %s\n", cid_str);
+    ResponseAppendAbst(responseArr);
 
     generateAnyCIDAttestMsg(&anyMsg, cid_str, sdk_priv_key_planetmint, sdk_pub_key_planetmint, sdk_address, sdk_ext_pub_key_planetmint );
   
@@ -96,17 +96,19 @@ void runRDDLSDKNotarizationWorkflow(const char* data_str, size_t data_length){
   
   }
   else{
-    printMsg("Register: Machine\n");
-    ResponseAppend_P("Register: Machine\n");
+    sprintf(responseArr, "Register: Machine\n");
+    ResponseAppendAbst(responseArr);
     status = registerMachine(&anyMsg);
   }
   if (status >= 0) {
-    ResponseAppend_P("TX processing:\n");
+    sprintf(responseArr, "TX processing:\n");
+    ResponseAppendAbst(responseArr);
     char* tx_payload = create_transaction(&anyMsg, "2");
 
     if(!tx_payload)
       return;
-    ResponseAppend_P("TX broadcast:\n");
+    sprintf(responseArr, "TX broadcast:\n");
+    ResponseAppendAbst(responseArr);
     broadcast_transaction( tx_payload );
   }
   ResponseJsonEnd();

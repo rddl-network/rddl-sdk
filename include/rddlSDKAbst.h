@@ -19,8 +19,6 @@ extern "C" {
 
 
 /* MAKE IT GENERIC */
-#define printMsg printf 
-
 extern uint8_t sdk_priv_key_planetmint[32+1];
 extern uint8_t sdk_priv_key_liquid[32+1];
 extern uint8_t sdk_pub_key_planetmint[33+1];
@@ -40,14 +38,14 @@ extern char sdk_chainid[30];
 extern char sdk_denom[20];
 
 extern bool sdk_readSeed;
-
-
+extern char responseArr[4096];
 
 const char* getPlanetmintAPI();
 bool hasMachineBeenAttested();
 bool rddl_writefile( const char* filename, uint8_t* content, size_t length);
 int readfile( const char* filename, uint8_t* content, size_t length);
-int ResponseAppend_P(const char* format, ...);
+int printMsg(const char* msg);
+int ResponseAppendAbst(const char* msg);
 int ResponseJsonEnd(void);
 char* getGPSstring();
 bool getAccountInfo( uint64_t* account_id, uint64_t* sequence );
