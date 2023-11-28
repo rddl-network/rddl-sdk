@@ -26,6 +26,15 @@
 #include "rddlSDKAPI.h"
 
 
+const char* sdkGetRDDLAddress()          { return (const char*) sdk_address; }
+const char* sdkGetExtPubKeyLiquid()      { return (const char*)sdk_ext_pub_key_liquid; }
+const char* sdkGetExtPubKeyPlanetmint()  { return (const char*)sdk_ext_pub_key_planetmint; }
+const uint8_t* sdkGetPrivKeyLiquid()     { return (const uint8_t*)sdk_priv_key_liquid; }
+const uint8_t* sdkGetPrivKeyPlanetmint() { return (const uint8_t*)sdk_priv_key_planetmint; }
+const char* sdkGetMachinePublicKey()     { return (const char*) sdk_machineid_public_key_hex; }
+char  sdkGetPlntmntKeys(){ return getPlntmntKeys(); }
+
+
 char* sdkSetSeed(char* pMnemonic, size_t len){
 
   char* mnemonic = NULL;
@@ -59,57 +68,112 @@ void sdkReadSeed(char* seed_arr, int* seed_size){
 }
 
 
+// void runRDDLSDKNotarizationWorkflow(const char* data_str, size_t data_length){
+//   Google__Protobuf__Any anyMsg = GOOGLE__PROTOBUF__ANY__INIT;
+//   clearStack();
+//   getPlntmntKeys();  
+//   int status = 0;
+
+//   if( hasMachineBeenAttested() )
+//   {
+//     size_t data_size = data_length;
+
+//     /* Globalda tanimlanan bir arrayin, kullanilmayan ilk adresini donduruyor */
+//     uint8_t* local_data = getStack( data_size+2 );
+
+//     memcpy( local_data, data_str, data_size);
+//     char signature[128+1] = {0};
+//     signRDDLNetworkMessageContent((const char*)local_data, data_size, signature);  
+
+//     // compute CID
+//     char* cid_str = create_cid_v1_from_string( (const char*) local_data );
+
+//     // store cid
+//     rddl_writefile( cid_str, (uint8_t*)local_data, data_size );
+
+//     // register CID
+//     // registerCID( cid_str );
+  
+//     sprintf(responseArr, "Notarize: CID Asset %s\n", cid_str);
+//     ResponseAppendAbst(responseArr);
+
+//     generateAnyCIDAttestMsg(&anyMsg, cid_str, sdk_priv_key_planetmint, sdk_pub_key_planetmint, sdk_address, sdk_ext_pub_key_planetmint );
+  
+// #ifdef LINUX_MACHINE
+//     free(cid_str); 
+// #endif
+  
+//   }
+//   else{
+//     sprintf(responseArr, "Register: Machine\n");
+//     ResponseAppendAbst(responseArr);
+//     status = registerMachine(&anyMsg);
+//   }
+//   if (status >= 0) {
+//     sprintf(responseArr, "TX processing:\n");
+//     ResponseAppendAbst(responseArr);
+//     char* tx_payload = create_transaction(&anyMsg, "2");
+
+//     if(!tx_payload)
+//       return;
+//     sprintf(responseArr, "TX broadcast:\n");
+//     ResponseAppendAbst(responseArr);
+//     broadcast_transaction( tx_payload );
+//   }
+//   ResponseJsonEnd();
+// }
+
+
+void runRDDLSDKMachineAttestation(const char* machineCategory, const char* manufacturer, const char* cid ){
+  Google__Protobuf__Any anyMsg = GOOGLE__PROTOBUF__ANY__INIT;
+  clearStack();
+  if( !getPlntmntKeys() )
+    return;
+
+  sprintf(responseArr, "Register: Machine\n");
+  printMsg(responseArr);
+  int status = registerMachine(&anyMsg, machineCategory, manufacturer, cid );
+  if ( status >= 0 ){
+    status = sendMessages( &anyMsg );
+  }
+}
+
+
 void runRDDLSDKNotarizationWorkflow(const char* data_str, size_t data_length){
   Google__Protobuf__Any anyMsg = GOOGLE__PROTOBUF__ANY__INIT;
   clearStack();
-  getPlntmntKeys();  
-  int status = 0;
+  if( !getPlntmntKeys() )
+    return;
 
-  if( hasMachineBeenAttested() )
-  {
-    size_t data_size = data_length;
+  if( !hasMachineBeenAttested() )
+    return;
 
-    /* Globalda tanimlanan bir arrayin, kullanilmayan ilk adresini donduruyor */
-    uint8_t* local_data = getStack( data_size+2 );
+  size_t data_size = data_length;
+  uint8_t* local_data = getStack( data_size+2 );
 
-    memcpy( local_data, data_str, data_size);
-    char signature[128+1] = {0};
-    signRDDLNetworkMessageContent((const char*)local_data, data_size, signature);  
+  memcpy( local_data, data_str, data_size);
+  char signature[128+1] = {0};
+  signRDDLNetworkMessageContent((const char*)local_data, data_size, signature);
 
-    // compute CID
-    char* cid_str = create_cid_v1_from_string( (const char*) local_data );
+  //compute CID
+  char* cid_str = create_cid_v1_from_string( (const char*) local_data );
 
-    // store cid
-    rddl_writefile( cid_str, (uint8_t*)local_data, data_size );
+  // store cid
+  rddl_writefile( cid_str, (uint8_t*)local_data, data_size );
 
-    // register CID
-    // registerCID( cid_str );
-  
-    sprintf(responseArr, "Notarize: CID Asset %s\n", cid_str);
-    ResponseAppendAbst(responseArr);
+  // register CID
+  //registerCID( cid_str );
 
-    generateAnyCIDAttestMsg(&anyMsg, cid_str, sdk_priv_key_planetmint, sdk_pub_key_planetmint, sdk_address, sdk_ext_pub_key_planetmint );
-  
+  sprintf(responseArr, "Notarize: CID Asset\n");
+  printMsg(responseArr);
+
+  generateAnyCIDAttestMsg(&anyMsg, cid_str, sdk_priv_key_planetmint, sdk_pub_key_planetmint, sdk_address, sdk_ext_pub_key_planetmint );
+  sendMessages( &anyMsg );
+
 #ifdef LINUX_MACHINE
-    free(cid_str);
+  free(cid_str);
 #endif
-  
-  }
-  else{
-    sprintf(responseArr, "Register: Machine\n");
-    ResponseAppendAbst(responseArr);
-    status = registerMachine(&anyMsg);
-  }
-  if (status >= 0) {
-    sprintf(responseArr, "TX processing:\n");
-    ResponseAppendAbst(responseArr);
-    char* tx_payload = create_transaction(&anyMsg, "2");
 
-    if(!tx_payload)
-      return;
-    sprintf(responseArr, "TX broadcast:\n");
-    ResponseAppendAbst(responseArr);
-    broadcast_transaction( tx_payload );
-  }
   ResponseJsonEnd();
 }
+

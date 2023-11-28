@@ -1,12 +1,16 @@
 #include "stdio.h"
 #include "stdint.h"
-#include <stdbool.h>
+#include <stdbool.h> 
 #include <string.h>
 #include "rddlSDKAPI.h"
 #include "unity.h"
 
 char TEST_SEED[]        = "12345d8b5ee5bcefd523ee4d4340a8956affbef5bb1978eb1e3f640318f87f4b";
 char TEST_MNEMONIC[]    = "victory cancel radio rotate all depart mind become axis boost tent ensure";
+char TEST_ADDRESS[]     = "plmnt1qv6k5st59kzt6jurdkc43xdndpdzx6wrzpsvv6";
+char TEST_LIQUID[]      = "xpub6FSQbqmhvqemWQ75NVpppJK2quNuVEoFGC2knrbgVymTkokfr4NCdBASt99FBGsXvNM7DsTAh3kLxjYpdUz1QStUNrZ3g2ENqD1BjAaQd6s";
+char TEST_PLANETMINT[]  = "pmpb7uDZMFAM4TrgEqrYoAHvx2Gegw5hERKCeWaVi3t7QCntXAGfVfswR8DdE96BYmLV4XTfXUfMmrtsH7XB8VHAaBCxWcjZEJSyufiLfsZuBcD";
+char TEST_MACHINE_ID[]  = "03E58EC4AE9B60564EDF51A1C9BCF9759C63B276D236CD55F15B02FD226AC2CE3F";
 
 void testMnemonic(void){
     char* mnemonic = sdkSetSeed(TEST_MNEMONIC, sizeof(TEST_MNEMONIC));
@@ -26,6 +30,27 @@ void testSeedOperation(void){
 }
 
 
+void testGetPublicKeys(){
+    sdkGetPlntmntKeys();
+
+    printf("\n\nAddress: %s\nLiquid: %s\nPlanetmint: %s\nMachine ID: %s\n\n", sdkGetRDDLAddress(), sdkGetExtPubKeyLiquid(), sdkGetExtPubKeyPlanetmint(), sdkGetMachinePublicKey()); 
+    TEST_ASSERT_TRUE(!strcmp(sdkGetRDDLAddress(),           TEST_ADDRESS));
+    TEST_ASSERT_TRUE(!strcmp(sdkGetExtPubKeyLiquid(),       TEST_LIQUID));
+    TEST_ASSERT_TRUE(!strcmp(sdkGetExtPubKeyPlanetmint(),   TEST_PLANETMINT));
+    TEST_ASSERT_TRUE(!strcmp(sdkGetMachinePublicKey(),      TEST_MACHINE_ID));
+}
+
+
+void testMachineAttestation(void){ 
+    char machinecid_buffer[64] = {0};
+    memset((void*)machinecid_buffer,0, 58+1);
+
+    runRDDLSDKMachineAttestation("otherserial", "RDDL", machinecid_buffer);
+
+    TEST_ASSERT_TRUE(true);
+}
+
+
 void testNotarizationFlow(void){ 
 
     runRDDLSDKNotarizationWorkflow("TESTDATA", sizeof("TESTDATA"));
@@ -39,6 +64,8 @@ int main()
     UNITY_BEGIN();
     RUN_TEST(testMnemonic);
     RUN_TEST(testSeedOperation);
+    RUN_TEST(testGetPublicKeys);
+    RUN_TEST(testMachineAttestation);
     RUN_TEST(testNotarizationFlow);
     return UNITY_END();
 }

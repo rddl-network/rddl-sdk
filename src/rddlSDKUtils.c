@@ -114,10 +114,10 @@ const uint8_t *fromhex(const char *str) {
 }
 
 
-void getPlntmntKeys(){
+bool getPlntmntKeys(){
   
-  /* Seed i oku*/
-  readSeed();
+  if( readSeed() == NULL )
+    return false;
 
   /* Seedden Priv key ve diger seyleri elde et */
   HDNode node_planetmint;
@@ -132,9 +132,6 @@ void getPlntmntKeys(){
   memcpy(sdk_priv_key_planetmint, node_planetmint.private_key, 32);
   memcpy(sdk_pub_key_planetmint, node_planetmint.public_key, PUB_KEY_SIZE);
 
-  // char hexBuf[256];
-  // toHexString(hexBuf, node_planetmint.public_key, PUB_KEY_SIZE*2);
-  // printf("%s\n", hexBuf);
 
   /* Seedden Priv key ve diger seyleri elde et */
   HDNode node_rddl;
@@ -156,11 +153,9 @@ void getPlntmntKeys(){
   hdnode_serialize_public( &node_planetmint, fingerprint, PLANETMINT_PMPB, sdk_ext_pub_key_planetmint, EXT_PUB_KEY_SIZE);
   hdnode_serialize_public( &node_rddl, fingerprint, VERSION_PUBLIC, sdk_ext_pub_key_liquid, EXT_PUB_KEY_SIZE);
 
-  // printf("%s\n",sdk_ext_pub_key_planetmint);
-
   ecdsa_get_public_key33(&secp256k1, private_key_machine_id, sdk_machineid_public_key);
   toHexString( sdk_machineid_public_key_hex, sdk_machineid_public_key, 33*2);
-  printf("Machine Public Key: %s\n", sdk_machineid_public_key_hex);
+  return true;
 }
 
 
@@ -181,11 +176,71 @@ void signRDDLNetworkMessageContent( const char* data_str, size_t data_length, ch
   ResponseAppendAbst(responseArr);
 }
 
-
-int registerMachine(void* anyMsg){
+ 
+// int registerMachine(void* anyMsg){
   
-  char machinecid_buffer[58+1] = {0};
+//   char machinecid_buffer[58+1] = {0};
 
+//   uint8_t signature[64]={0};
+//   char signature_hex[64*2+1]={0};
+//   uint8_t hash[32];
+
+//   bool ret_bool = getMachineIDSignature(  private_key_machine_id,  sdk_machineid_public_key, signature, hash);
+//   if( ! ret_bool )
+//   {
+//     sprintf(responseArr, "No machine signature\n");
+//     ResponseAppendAbst(responseArr);
+//     return -1;
+//   }
+  
+//   toHexString( signature_hex, signature, 64*2);
+
+//   char* gps_str = getGPSstring();
+//   if (!gps_str )
+//     gps_str = "";
+
+//   int readbytes = readfile( "machinecid", (uint8_t*)machinecid_buffer, 58+1);
+//   if( readbytes < 0 )
+//     memset((void*)machinecid_buffer,0, 58+1);
+
+//   Planetmintgo__Machine__Metadata metadata = PLANETMINTGO__MACHINE__METADATA__INIT;
+//   metadata.additionaldatacid = machinecid_buffer;
+//   metadata.gps = gps_str;
+//   metadata.assetdefinition = "{\"Version\": \"0.1\"}";
+//   metadata.device = "{\"Manufacturer\": \"RDDL\",\"Serial\":\"otherserial\"}";
+
+//   Planetmintgo__Machine__Machine machine = PLANETMINTGO__MACHINE__MACHINE__INIT;
+//   machine.name = (char*)sdk_address;
+//   machine.ticker = NULL;
+//   machine.domain = DEFAULT_DOMAIN_TEXT;
+//   machine.reissue = false;
+//   machine.amount = 1;
+//   machine.precision = 8;
+//   machine.issuerplanetmint = sdk_ext_pub_key_planetmint;
+//   machine.issuerliquid = sdk_ext_pub_key_liquid;
+//   machine.machineid = sdk_machineid_public_key_hex;
+//   machine.metadata = &metadata;
+//   machine.type = RDDL_MACHINE_POWER_SWITCH;
+//   machine.machineidsignature = signature_hex;
+//   machine.address = (char*)sdk_address;
+ 
+//   Planetmintgo__Machine__MsgAttestMachine machineMsg = PLANETMINTGO__MACHINE__MSG_ATTEST_MACHINE__INIT;
+//   machineMsg.creator = (char*)sdk_address;
+//   machineMsg.machine = &machine;
+//   int ret = generateAnyAttestMachineMsg((Google__Protobuf__Any*)anyMsg, &machineMsg);
+//   if( ret<0 )
+//   {
+//     sprintf(responseArr, "No Attestation message\n");
+//     ResponseAppendAbst(responseArr);
+//     return -1;
+//   }
+
+//   return 0;
+// }
+
+
+int registerMachine(void* anyMsg, const char* machineCategory, const char* manufacturer, const char* cid){
+  
   uint8_t signature[64]={0};
   char signature_hex[64*2+1]={0};
   uint8_t hash[32];
@@ -203,24 +258,27 @@ int registerMachine(void* anyMsg){
   char* gps_str = getGPSstring();
   if (!gps_str )
     gps_str = "";
+  
+  size_t desLength = strlen( manufacturer) + strlen( machineCategory )+ 36;
+  char* deviceDescription = (char*)getStack( desLength );
+  sprintf( deviceDescription, "{\"Category\":\"%s\", \"Manufacturer\":\"%s\"}", machineCategory, manufacturer);
 
-  int readbytes = readfile( "machinecid", (uint8_t*)machinecid_buffer, 58+1);
-  if( readbytes < 0 )
-    memset((void*)machinecid_buffer,0, 58+1);
 
   Planetmintgo__Machine__Metadata metadata = PLANETMINTGO__MACHINE__METADATA__INIT;
-  metadata.additionaldatacid = machinecid_buffer;
+  metadata.additionaldatacid = (char*)cid;
   metadata.gps = gps_str;
-  metadata.assetdefinition = "{\"Version\": \"0.1\"}";
-  metadata.device = "{\"Manufacturer\": \"RDDL\",\"Serial\":\"otherserial\"}";
+  metadata.assetdefinition = "{\"Version\":\"0.2\"}";
+  metadata.device = deviceDescription;
 
   Planetmintgo__Machine__Machine machine = PLANETMINTGO__MACHINE__MACHINE__INIT;
   machine.name = (char*)sdk_address;
-  machine.ticker = NULL;
-  machine.domain = DEFAULT_DOMAIN_TEXT;
-  machine.reissue = false;
-  machine.amount = 1;
-  machine.precision = 8;
+  
+  // machine.ticker = NULL;                 //obsolete
+  // machine.domain = "lab.r3c.network";    //obsolete
+  // machine.reissue = false;               //obsolete
+  // machine.amount = 1;                    //obsolete
+  // machine.precision = 8;                 //obsolete
+  
   machine.issuerplanetmint = sdk_ext_pub_key_planetmint;
   machine.issuerliquid = sdk_ext_pub_key_liquid;
   machine.machineid = sdk_machineid_public_key_hex;
@@ -228,6 +286,7 @@ int registerMachine(void* anyMsg){
   machine.type = RDDL_MACHINE_POWER_SWITCH;
   machine.machineidsignature = signature_hex;
   machine.address = (char*)sdk_address;
+
  
   Planetmintgo__Machine__MsgAttestMachine machineMsg = PLANETMINTGO__MACHINE__MSG_ATTEST_MACHINE__INIT;
   machineMsg.creator = (char*)sdk_address;
@@ -283,4 +342,18 @@ void setAccountID( const char* account, size_t len)
 {
   rddl_writefile( "accountid", (uint8_t*)account, len);
   memset((void*)sdk_accountid,0, sizeof(sdk_accountid));
+}
+
+
+int sendMessages( void* pAnyMsg) {
+  sprintf(responseArr, "TX processing:\n");
+  ResponseAppendAbst(responseArr);
+  char* tx_payload = create_transaction(pAnyMsg, "1");
+
+  if(!tx_payload)
+    return -1;
+  sprintf(responseArr, "TX broadcast:\n");
+  ResponseAppendAbst(responseArr);
+  int broadcast_return = broadcast_transaction( tx_payload );
+  return broadcast_return;
 }
