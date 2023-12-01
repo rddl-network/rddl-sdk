@@ -73,6 +73,12 @@ int readfile( const char* filename, uint8_t* content, size_t length){
 }
 
 
+int printMsg(const char* msg) 
+{
+  return tasmotaSerialPrint(msg);
+}
+
+
 int ResponseAppendAbst(const char* msg) 
 {
   return ResponseAppendAbstTasmota(msg);

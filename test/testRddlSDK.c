@@ -12,7 +12,17 @@ char TEST_LIQUID[]      = "xpub6FSQbqmhvqemWQ75NVpppJK2quNuVEoFGC2knrbgVymTkokfr
 char TEST_PLANETMINT[]  = "pmpb7uDZMFAM4TrgEqrYoAHvx2Gegw5hERKCeWaVi3t7QCntXAGfVfswR8DdE96BYmLV4XTfXUfMmrtsH7XB8VHAaBCxWcjZEJSyufiLfsZuBcD";
 char TEST_MACHINE_ID[]  = "03E58EC4AE9B60564EDF51A1C9BCF9759C63B276D236CD55F15B02FD226AC2CE3F";
 
+
 void testMnemonic(void){
+    char* mnemonic = sdkSetSeed(TEST_MNEMONIC, 0);
+
+    printf("MNEMONIC: %s\n", mnemonic);
+
+    TEST_ASSERT_TRUE(sdkGetPlntmntKeys());
+}
+
+
+void testMnemonicGiven(void){
     char* mnemonic = sdkSetSeed(TEST_MNEMONIC, sizeof(TEST_MNEMONIC));
 
     TEST_ASSERT_TRUE(!strcmp(mnemonic, TEST_MNEMONIC));
@@ -24,7 +34,9 @@ void testSeedOperation(void){
 
     char seed_arr[128] = {0};
     int  seed_size = sizeof(seed_arr);
-    sdkReadSeed(seed_arr, &seed_size);
+    int  size = sdkReadSeed(seed_arr, &seed_size);
+
+    printf("size %d\n", size);
 
     TEST_ASSERT_TRUE(!strcmp(seed_arr, TEST_SEED));
 }
@@ -63,6 +75,7 @@ int main()
 {
     UNITY_BEGIN();
     RUN_TEST(testMnemonic);
+    RUN_TEST(testMnemonicGiven);
     RUN_TEST(testSeedOperation);
     RUN_TEST(testGetPublicKeys);
     RUN_TEST(testMachineAttestation);
