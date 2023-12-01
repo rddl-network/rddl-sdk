@@ -60,13 +60,13 @@ void sdkStoreSeed(char* new_seed){
 }
 
 
-int sdkReadSeed(char* seed_arr, int* seed_size){
-  readSeed();
+uint8_t* sdkReadSeed(char* seed_arr, int* seed_size){
+  uint8_t* temp_seed = readSeed();
 
   memcpy(seed_arr, secret_seed, SEED_SIZE);
   *seed_size = SEED_SIZE;
 
-  return SEED_SIZE;
+  return temp_seed;
 }
 
 

@@ -87,6 +87,9 @@ uint8_t* readSeed()
   // memcpy(secret_seed, "12345d8b5ee5bcefd523ee4d4340a8956affbef5bb1978eb1e3f640318f87f4b6438733879360f460932fa68bfc06ae8aaf837b5d45891d114a58d8ce19a17d7", SEED_SIZE);
   // int readbytes = SEED_SIZE;
 
+  sprintf(responseArr, "{ \"%s\":\"%d\" }", "READ SIZE", readbytes);
+  ResponseAppendAbst(responseArr);
+
   if( readbytes != SEED_SIZE )
     return NULL;
 

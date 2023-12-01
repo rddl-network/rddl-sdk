@@ -11,7 +11,7 @@ const char* sdkGetMachinePublicKey();
 bool  sdkGetPlntmntKeys();
 char* sdkSetSeed(char* pMnemonic, size_t len);
 void sdkStoreSeed(char* new_seed);
-int sdkReadSeed(char* seed_arr, int* seed_size);
+uint8_t* sdkReadSeed(char* seed_arr, int* seed_size);
 void runRDDLSDKMachineAttestation(const char* machineCategory, const char* manufacturer, const char* cid );
 void runRDDLSDKNotarizationWorkflow(const char* data_str, size_t data_length);
 
