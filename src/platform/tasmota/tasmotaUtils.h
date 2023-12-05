@@ -12,6 +12,8 @@ char* getGPSstringTasmota();
 int broadcastTransactionTasmota( char* tx_payload, char *http_answ );
 bool getAccountInfoTasmota( const char* account_address, uint64_t* account_id, uint64_t* sequence );
 int ResponseAppendAbstTasmota(const char* msg);
+int tasmotaSerialPrint(const char* msg);
+
 
 #ifdef __cplusplus
 }

@@ -67,9 +67,15 @@ bool rddl_writefile( const char* filename, uint8_t* content, size_t length) {
 
 
 int readfile( const char* filename, uint8_t* content, size_t length){
-  int size = readfileTasmota(filename, content, length);
+  bool status = readfileTasmota(filename, content, length);
 
-  return size;
+  return (status) ? length : 0;
+}
+
+
+int printMsg(const char* msg) 
+{
+  return tasmotaSerialPrint(msg);
 }
 
 

@@ -138,3 +138,8 @@ bool getAccountInfoTasmota( const char* account_address, uint64_t* account_id, u
 int ResponseAppendAbstTasmota(const char* msg){
   return ResponseAppend_P(msg);
 }
+
+
+int tasmotaSerialPrint(const char* msg){
+  return Serial.println(msg);
+}
