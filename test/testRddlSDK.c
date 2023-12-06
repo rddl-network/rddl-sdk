@@ -34,9 +34,9 @@ void testSeedOperation(void){
 
     char seed_arr[128] = {0};
     int  seed_size = sizeof(seed_arr);
-    int  size = sdkReadSeed(seed_arr, &seed_size);
+    sdkReadSeed(seed_arr, &seed_size);
 
-    printf("size %d\n", size);
+    printf("size %d\n", seed_size);
 
     TEST_ASSERT_TRUE(!strcmp(seed_arr, TEST_SEED));
 }
