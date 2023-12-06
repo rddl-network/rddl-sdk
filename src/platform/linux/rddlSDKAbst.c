@@ -1,3 +1,4 @@
+#include <stddef.h>
 #include <stdbool.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -6,10 +7,23 @@
 #include <fcntl.h>
 #include <string.h>
 #include <errno.h>
+#include <stdint.h>
+#include <stdlib.h>
+
  
-#include "planetmint.h"
+#ifdef TASMOTA
+#include "base64_plntmnt.h"
+#include "ed25519.h"
+#else
+#include "base64.h"
+#include "ed25519-donna/ed25519.h"
+#endif
+
+
 #include "rddl.h"
 #include "rddl_cid.h"
+#include "hmac.h"
+#include "sha3.h"
 #include "bip39.h"
 #include "bip32.h"
 #include "curves.h"

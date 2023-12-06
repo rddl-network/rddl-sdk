@@ -5,8 +5,9 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <string.h>
+
  
-#include "planetmint.h"
+
 #include "rddl.h"
 #include "rddl_cid.h"
 #include "bip39.h"

@@ -28,8 +28,6 @@ target_include_directories(rddlSDK PUBLIC
     libs/librddl/libs/trezor-crypto/
     libs/librddl/libs/trezor-crypto/ed25519-donna/
     libs/librddl/
-    libs/librddl/libs/json-maker
-    libs/librddl/libs/tiny-json
     libs/librddl/libs/base64
     libs/librddl/libs/proto
     /usr/include
