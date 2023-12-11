@@ -29,6 +29,7 @@
 #include "configFile.h"
 #include "rddlSDKAbst.h"
 #include "rddlSDKUtils.h"
+#include "rddlSDKSettings.h"
 
 
 char* create_transaction( void* anyMsg, char* tokenAmount )
@@ -38,16 +39,16 @@ char* create_transaction( void* anyMsg, char* tokenAmount )
   bool gotAccountID = getAccountInfo( &account_id, &sequence );
   if( !gotAccountID )
   {
-    account_id = (uint64_t) atoi( (const char*) getAccountID());
+    return NULL;
   }
 
   Cosmos__Base__V1beta1__Coin coin = COSMOS__BASE__V1BETA1__COIN__INIT;
-  coin.denom = getDenom();
+  coin.denom = getSetting( SET_PLANETMINT_DENOM ); //getDenom();
   coin.amount = tokenAmount;
   
   uint8_t* txbytes = NULL;
   size_t tx_size = 0;
-  char* chain_id = getChainID();
+  char* chain_id = getSetting( SET_PLANETMINT_CHAINID ); //getChainID();
   int ret = prepareTx( (Google__Protobuf__Any*)anyMsg, &coin, sdk_priv_key_planetmint, sdk_pub_key_planetmint, sequence, chain_id, account_id, &txbytes, &tx_size);
   if( ret < 0 )
     return NULL;
@@ -304,49 +305,6 @@ int registerMachine(void* anyMsg, const char* machineCategory, const char* manuf
 
   return 0;
 }
-
-
-void setDenom( const char* denom, size_t len)
-{
-  rddl_writefile( "planetmintdenom", (uint8_t*)denom, len);
-  memset((void*)sdk_denom,0, sizeof(sdk_denom));
-}
-
-
-char* getDenom()
-{
-  if( strlen( sdk_denom) == 0 )
-    strcpy(sdk_denom, DEFAULT_DENOM_TEXT);
-  return sdk_denom;
-}
-
-
-char* getChainID()
-{
-  if( strlen( sdk_chainid) == 0 )
-    strcpy(sdk_chainid, DEFAULT_CHAINID_TEXT);
-
-  return sdk_chainid;
-}
-
-
-char* getAccountID()
-{
-  if( strlen( sdk_accountid) == 0 ){
-      int readbytes = readfile( "accountid", (uint8_t*)sdk_accountid, 20);
-    if( readbytes < 0 )
-      memset((void*)sdk_planetmintapi,0, sizeof(sdk_planetmintapi));
-  }
-  return sdk_accountid;
-}
-
-
-void setAccountID( const char* account, size_t len)
-{
-  rddl_writefile( "accountid", (uint8_t*)account, len);
-  memset((void*)sdk_accountid,0, sizeof(sdk_accountid));
-}
-
 
 int sendMessages( void* pAnyMsg) {
   sprintf(responseArr, "TX processing:\n");

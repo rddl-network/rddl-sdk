@@ -1,0 +1,11 @@
+#ifndef RDDL_ENUMS_H
+#define RDDL_ENUMS_H
+
+typedef enum {
+    SET_PLANETMINT_API = 124,
+    SET_PLANETMINT_CHAINID,
+    SET_PLANETMINT_DENOM, 
+    SET_NOTARIZTATION_PERIODICITY,
+} RDDLSettings;
+
+#endif /* RDDL_ENUMS_H */
