@@ -29,9 +29,6 @@
 #include "rddlSDKAbst.h"
 #include "tasmotaUtils.h"
 
-extern bool SettingsUpdateText(uint32_t index, const char* replace_me);
-extern char* SettingsText(uint32_t index);
-
 
 uint8_t sdk_priv_key_planetmint[32+1] = {0};
 uint8_t sdk_priv_key_liquid[32+1] = {0};
@@ -111,6 +108,7 @@ bool getAccountInfo( uint64_t* account_id, uint64_t* sequence )
   return ret;
 }
 
+
 int broadcast_transaction( char* tx_payload ){
   char http_answr[512];
   int status = broadcastTransactionTasmota(tx_payload, http_answr);
@@ -123,9 +121,12 @@ int broadcast_transaction( char* tx_payload ){
   return status;
 }
 
+
 char* getSetting(uint32_t index){
-  return SettingsText(index);
+  return tasmotaGetSetting(index);
 }
-bool  setSetting(uint32_t index, const char* replacementText){
-  return SettingsUpdateText( index, replacementText);
+
+
+bool setSetting(uint32_t index, const char* replacementText){
+  return tasmotaSetSetting( index, replacementText);
 }

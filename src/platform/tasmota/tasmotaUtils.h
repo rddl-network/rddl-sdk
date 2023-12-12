@@ -13,6 +13,9 @@ int broadcastTransactionTasmota( char* tx_payload, char *http_answ );
 bool getAccountInfoTasmota( const char* account_address, uint64_t* account_id, uint64_t* sequence );
 int ResponseAppendAbstTasmota(const char* msg);
 int tasmotaSerialPrint(const char* msg);
+char* tasmotaGetSetting(uint32_t index);
+bool tasmotaSetSetting(uint32_t index, const char* replacementText);
+
 
 
 #ifdef __cplusplus

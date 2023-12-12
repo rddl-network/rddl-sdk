@@ -10,6 +10,10 @@
 extern bool TfsSaveFile(const char *fname, const uint8_t *buf, uint32_t len);
 extern bool TfsLoadFile(const char *fname, uint8_t *buf, uint32_t len);
 extern int  ResponseAppend_P(const char* format, ...);
+extern bool SettingsUpdateText(uint32_t index, const char* replace_me);
+extern char* SettingsText(uint32_t index);
+
+
 
 bool hasMachineBeenAttestedTasmota(const char* g_ext_pub_key_planetmint) {
   HTTPClientLight http;
@@ -137,4 +141,11 @@ int ResponseAppendAbstTasmota(const char* msg){
 
 int tasmotaSerialPrint(const char* msg){
   return Serial.println(msg);
+}
+
+char* tasmotaGetSetting(uint32_t index){
+  return SettingsText(index);
+}
+bool tasmotaSetSetting(uint32_t index, const char* replacementText){
+  return SettingsUpdateText( index, replacementText);
 }

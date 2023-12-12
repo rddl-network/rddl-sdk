@@ -70,7 +70,7 @@ static char curlOutput[1024];
 char responseArr[4096];
 
 
-E IT GENERIC */
+/* MAKE IT GENERIC */
 /* Bir urlye http get yapip attested olup olmadigina bakiyor */
 bool hasMachineBeenAttested() {
   const char *search_string = "name";
@@ -259,6 +259,7 @@ int broadcast_transaction( char* tx_payload ){
   return 0;
 }
 
+
 #define API_FILE          "planetmintapi"
 #define PERIODICITY_FILE  "notarizationperiodicity"
 #define CHAINID_FILE      "planetmintchainid"
@@ -292,6 +293,7 @@ default:
   return NULL;
   }
 }
+
 bool setSetting(uint32_t index, const char* replacementText){
   bool retValue = false;
   switch(index) {
@@ -316,20 +318,3 @@ default:
   }
   return retValue;
 }
-
-
-// char* getDenom()
-// {
-//   if( strlen( sdk_denom) == 0 )
-//     strcpy(sdk_denom, DEFAULT_DENOM_TEXT);
-//   return sdk_denom;
-// }
-
-
-// char* getChainID()
-// {
-//   if( strlen( sdk_chainid) == 0 )
-//     strcpy(sdk_chainid, DEFAULT_CHAINID_TEXT);
-
-//   return sdk_chainid;
-// }
