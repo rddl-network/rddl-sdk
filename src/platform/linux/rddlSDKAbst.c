@@ -264,25 +264,25 @@ char* getSetting(uint32_t index){
   switch(index) {
 SDK_SET_NOTARIZTATION_PERIODICITY:
     if( strlen( sdk_periodicity) == 0 ){
-      if( !readfile(SETTINGS_PERIODICITY_FILE, ((uint8_t*)sdk_periodicity, 20) ) )
+      if( !readfile(SETTINGS_PERIODICITY_FILE, (uint8_t*)sdk_periodicity, 20) )
         strcpy(sdk_periodicity, DEFAULT_PERIODICITY_TEXT);
     }
     return sdk_periodicity;
 SDK_SET_PLANETMINT_API:
     if( strlen( sdk_planetmintapi) == 0 ){
-      if( !readfile(SETTINGS_API_FILE, ((uint8_t*)sdk_planetmintapi, 100) ) )
+      if( !readfile(SETTINGS_API_FILE, (uint8_t*)sdk_planetmintapi, 100) )
         strcpy(sdk_planetmintapi, DEFAULT_API_TEXT);
     }
     return sdk_planetmintapi;
 SDK_SET_PLANETMINT_CHAINID:
     if( strlen( sdk_chainid) == 0 ){
-      if( !readfile(SETTINGS_CHAINID_FILE, ((uint8_t*)sdk_chainid, 30) ) )
+      if( !readfile(SETTINGS_CHAINID_FILE, (uint8_t*)sdk_chainid, 30) )
         strcpy(sdk_chainid, DEFAULT_API_TEXT);
     }
     return sdk_chainid;
 SDK_SET_PLANETMINT_DENOM:
     if( strlen( sdk_denom) == 0 )
-      if( !readfile(SETTINGS_DENOM_FILE, ((uint8_t*)sdk_chainid, 20) ) )
+      if( !readfile(SETTINGS_DENOM_FILE, (uint8_t*)sdk_chainid, 20) )
         strcpy(sdk_denom, DEFAULT_DENOM_TEXT);
     return sdk_denom;
 default:
