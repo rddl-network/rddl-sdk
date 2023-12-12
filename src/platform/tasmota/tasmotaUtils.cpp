@@ -3,7 +3,6 @@
 #include "planetmintgo.h"
 #include "tasmotaUtils.h"
 #include "HttpClientLight.h"
-#include "rddlSDKAbst.h"
 #include "rddlSDKSettings.h"
 
 
@@ -19,7 +18,7 @@ bool hasMachineBeenAttestedTasmota(const char* g_ext_pub_key_planetmint) {
   HTTPClientLight http;
 
   String uri = "/planetmint/machine/get_machine_by_public_key/";
-  uri = getSetting( SDK_SET_PLANETMINT_API) + uri;
+  uri = tasmotaGetSetting( SDK_SET_PLANETMINT_API) + uri;
   uri = uri + g_ext_pub_key_planetmint;
   http.begin(uri);
   http.addHeader("Content-Type", "application/json");
@@ -95,7 +94,7 @@ char* getGPSstringTasmota(){
 int broadcastTransactionTasmota( char* tx_payload, char *http_answ){
   HTTPClientLight http;
   String uri = "/cosmos/tx/v1beta1/txs";
-  uri = getSetting( SDK_SET_PLANETMINT_API) + uri;
+  uri = tasmotaGetSetting( SDK_SET_PLANETMINT_API) + uri;
   http.begin(uri);
   http.addHeader("accept", "application/json");
   http.addHeader("Content-Type", "application/json");
@@ -113,7 +112,7 @@ bool getAccountInfoTasmota( const char* account_address, uint64_t* account_id, u
   HTTPClientLight http;
   String uri = "/cosmos/auth/v1beta1/account_info/";
 
-  uri = getSetting( SDK_SET_PLANETMINT_API) + uri;
+  uri = tasmotaGetSetting( SDK_SET_PLANETMINT_API) + uri;
   uri = uri + account_address;
   http.begin(uri);
   http.addHeader("Content-Type", "application/json");
@@ -143,9 +142,12 @@ int tasmotaSerialPrint(const char* msg){
   return Serial.println(msg);
 }
 
+
 char* tasmotaGetSetting(uint32_t index){
   return SettingsText(index);
 }
+
+
 bool tasmotaSetSetting(uint32_t index, const char* replacementText){
   return SettingsUpdateText( index, replacementText);
 }
