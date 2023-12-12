@@ -19,7 +19,7 @@ bool hasMachineBeenAttestedTasmota(const char* g_ext_pub_key_planetmint) {
   HTTPClientLight http;
 
   String uri = "/planetmint/machine/get_machine_by_public_key/";
-  uri = getSetting( SET_PLANETMINT_API) + uri;
+  uri = getSetting( SDK_SET_PLANETMINT_API) + uri;
   uri = uri + g_ext_pub_key_planetmint;
   http.begin(uri);
   http.addHeader("Content-Type", "application/json");
@@ -95,7 +95,7 @@ char* getGPSstringTasmota(){
 int broadcastTransactionTasmota( char* tx_payload, char *http_answ){
   HTTPClientLight http;
   String uri = "/cosmos/tx/v1beta1/txs";
-  uri = getSetting( SET_PLANETMINT_API) + uri;
+  uri = getSetting( SDK_SET_PLANETMINT_API) + uri;
   http.begin(uri);
   http.addHeader("accept", "application/json");
   http.addHeader("Content-Type", "application/json");
@@ -113,7 +113,7 @@ bool getAccountInfoTasmota( const char* account_address, uint64_t* account_id, u
   HTTPClientLight http;
   String uri = "/cosmos/auth/v1beta1/account_info/";
 
-  uri = getSetting( SET_PLANETMINT_API) + uri;
+  uri = getSetting( SDK_SET_PLANETMINT_API) + uri;
   uri = uri + account_address;
   http.begin(uri);
   http.addHeader("Content-Type", "application/json");

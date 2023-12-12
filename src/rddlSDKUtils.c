@@ -43,12 +43,12 @@ char* create_transaction( void* anyMsg, char* tokenAmount )
   }
 
   Cosmos__Base__V1beta1__Coin coin = COSMOS__BASE__V1BETA1__COIN__INIT;
-  coin.denom = getSetting( SET_PLANETMINT_DENOM ); //getDenom();
+  coin.denom = getSetting( SDK_SET_PLANETMINT_DENOM ); //getDenom();
   coin.amount = tokenAmount;
   
   uint8_t* txbytes = NULL;
   size_t tx_size = 0;
-  char* chain_id = getSetting( SET_PLANETMINT_CHAINID ); //getChainID();
+  char* chain_id = getSetting( SDK_SET_PLANETMINT_CHAINID ); //getChainID();
   int ret = prepareTx( (Google__Protobuf__Any*)anyMsg, &coin, sdk_priv_key_planetmint, sdk_pub_key_planetmint, sequence, chain_id, account_id, &txbytes, &tx_size);
   if( ret < 0 )
     return NULL;

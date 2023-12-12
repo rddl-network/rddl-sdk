@@ -235,7 +235,7 @@ bool getAccountInfo( uint64_t* account_id, uint64_t* sequence )
 int broadcast_transaction( char* tx_payload ){
   const char* curlCommand = "curl -X POST";
   char url[4096];
-  snprintf(url, sizeof(url), "%s/cosmos/tx/v1beta1/txs", getSetting( SET_PLANETMINT_API));
+  snprintf(url, sizeof(url), "%s/cosmos/tx/v1beta1/txs", getSetting( SDK_SET_PLANETMINT_API));
   const char* headers = "-H \"accept: application/json\" -H \"Content-Type: application/json\"";
   
   char curlCmd[8192];
@@ -260,57 +260,53 @@ int broadcast_transaction( char* tx_payload ){
 }
 
 
-#define API_FILE          "planetmintapi"
-#define PERIODICITY_FILE  "notarizationperiodicity"
-#define CHAINID_FILE      "planetmintchainid"
-#define DENOM_FILE        "planetmintdenom"
-
 char* getSetting(uint32_t index){
   switch(index) {
-if( strlen( sdk_periodicity) == 0 ){
-    if( !readfile(SET_NOTARIZTATION_PERIODICITY, ((uint8_t*)sdk_periodicity, 20) ) )
-      strcpy(sdk_periodicity, DEFAULT_PERIODICITY_TEXT);
-  }
-  return sdk_periodicity;
-SET_PLANETMINT_API:
-  if( strlen( sdk_planetmintapi) == 0 ){
-    if( !readfile(API_FILE, ((uint8_t*)sdk_planetmintapi, 100) ) )
-      strcpy(sdk_planetmintapi, DEFAULT_API_TEXT);
-  }
-  return sdk_planetmintapi;
-SET_PLANETMINT_CHAINID:
-  if( strlen( sdk_chainid) == 0 ){
-    if( !readfile(CHAINID_FILE, ((uint8_t*)sdk_chainid, 30) ) )
-      strcpy(sdk_chainid, DEFAULT_API_TEXT);
-  }
-  return sdk_chainid;
-SET_PLANETMINT_DENOM:
-  if( strlen( sdk_denom) == 0 )
-    if( !readfile(DENOM_FILE, ((uint8_t*)sdk_chainid, 20) ) )
-      strcpy(sdk_denom, DEFAULT_DENOM_TEXT);
-  return sdk_denom;
+SDK_SET_NOTARIZTATION_PERIODICITY:
+    if( strlen( sdk_periodicity) == 0 ){
+      if( !readfile(SETTINGS_PERIODICITY_FILE, ((uint8_t*)sdk_periodicity, 20) ) )
+        strcpy(sdk_periodicity, DEFAULT_PERIODICITY_TEXT);
+    }
+    return sdk_periodicity;
+SDK_SET_PLANETMINT_API:
+    if( strlen( sdk_planetmintapi) == 0 ){
+      if( !readfile(SETTINGS_API_FILE, ((uint8_t*)sdk_planetmintapi, 100) ) )
+        strcpy(sdk_planetmintapi, DEFAULT_API_TEXT);
+    }
+    return sdk_planetmintapi;
+SDK_SET_PLANETMINT_CHAINID:
+    if( strlen( sdk_chainid) == 0 ){
+      if( !readfile(SETTINGS_CHAINID_FILE, ((uint8_t*)sdk_chainid, 30) ) )
+        strcpy(sdk_chainid, DEFAULT_API_TEXT);
+    }
+    return sdk_chainid;
+SDK_SET_PLANETMINT_DENOM:
+    if( strlen( sdk_denom) == 0 )
+      if( !readfile(SETTINGS_DENOM_FILE, ((uint8_t*)sdk_chainid, 20) ) )
+        strcpy(sdk_denom, DEFAULT_DENOM_TEXT);
+    return sdk_denom;
 default:
-  return NULL;
+    return NULL;
   }
 }
 
 bool setSetting(uint32_t index, const char* replacementText){
   bool retValue = false;
   switch(index) {
-SET_NOTARIZTATION_PERIODICITY:
-    retValue = rddl_writefile( PERIODICITY_FILE, (uint8_t*)replacementText, strlen(replacementText));
+SDK_SET_NOTARIZTATION_PERIODICITY:
+    retValue = rddl_writefile( SETTINGS_PERIODICITY_FILE, (uint8_t*)replacementText, strlen(replacementText));
     memset(sdk_periodicity,0,20);
     break;  
-SET_PLANETMINT_API:   
-    retValue = rddl_writefile( API_FILE, (uint8_t*)replacementText, strlen(replacementText));
+SDK_SET_PLANETMINT_API:   
+    retValue = rddl_writefile( SETTINGS_API_FILE, (uint8_t*)replacementText, strlen(replacementText));
     memset(sdk_planetmintapi,0,100);
     break;  
-SET_PLANETMINT_CHAINID:
-    retValue = rddl_writefile( CHAINID_FILE, (uint8_t*)replacementText, strlen(replacementText));
+SDK_SET_PLANETMINT_CHAINID:
+    retValue = rddl_writefile( SETTINGS_CHAINID_FILE, (uint8_t*)replacementText, strlen(replacementText));
     memset(sdk_chainid,0,30);
     break;  
-SET_PLANETMINT_DENOM:
-    retValue = rddl_writefile( DENOM_FILE, (uint8_t*)replacementText, strlen(replacementText));
+SDK_SET_PLANETMINT_DENOM:
+    retValue = rddl_writefile( SETTINGS_DENOM_FILE, (uint8_t*)replacementText, strlen(replacementText));
     memset(sdk_denom,0,20);
     break;  
 default:
