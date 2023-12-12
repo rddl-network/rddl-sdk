@@ -1,7 +1,7 @@
 {
   "name": "rddl-sdk",
   "keywords": "rddl-sdk, librddl",
-  "description": "Use librddl to connect rddl network, prepare transaction, make registirations",
+  "description": "Use librddl to connect rddl network, prepare transaction, make registrations",
   "repository":
   {
     "type": "git",

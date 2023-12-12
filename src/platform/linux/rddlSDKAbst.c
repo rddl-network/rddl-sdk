@@ -41,6 +41,8 @@
 #include "google/protobuf/any.pb-c.h"
 
 #include "rddlSDKAbst.h"
+#include "rddlSDKSettings.h"
+#include "configFile.h"
 
 uint8_t sdk_priv_key_planetmint[32+1] = {0};
 uint8_t sdk_priv_key_liquid[32+1] = {0};
@@ -54,8 +56,9 @@ char sdk_ext_pub_key_planetmint[EXT_PUB_KEY_SIZE+1] = {0};
 char sdk_ext_pub_key_liquid[EXT_PUB_KEY_SIZE+1] = {0};
 char sdk_machineid_public_key_hex[33*2+1] = {0};
 
+char sdk_periodicity[20] = {0};
 char sdk_planetmintapi[100] = {0};
-char sdk_accountid[20] = {0};
+
 char sdk_chainid[30] = {0};
 char sdk_denom[20] = {0};
 
@@ -65,12 +68,6 @@ static char curlCmd[256];
 static char curlOutput[1024];
 
 char responseArr[4096];
-
-
-const char* getPlanetmintAPI() {
-    // Implement your logic to get the API URL here
-    return "https://testnet-api.rddl.io";
-}
 
 
 /* MAKE IT GENERIC */
@@ -238,7 +235,7 @@ bool getAccountInfo( uint64_t* account_id, uint64_t* sequence )
 int broadcast_transaction( char* tx_payload ){
   const char* curlCommand = "curl -X POST";
   char url[4096];
-  snprintf(url, sizeof(url), "%s/cosmos/tx/v1beta1/txs", getPlanetmintAPI());
+  snprintf(url, sizeof(url), "%s/cosmos/tx/v1beta1/txs", getSetting( SDK_SET_PLANETMINT_API));
   const char* headers = "-H \"accept: application/json\" -H \"Content-Type: application/json\"";
   
   char curlCmd[8192];
@@ -262,3 +259,58 @@ int broadcast_transaction( char* tx_payload ){
   return 0;
 }
 
+
+char* getSetting(uint32_t index){
+  switch(index) {
+SDK_SET_NOTARIZTATION_PERIODICITY:
+    if( strlen( sdk_periodicity) == 0 ){
+      if( !readfile(SETTINGS_PERIODICITY_FILE, (uint8_t*)sdk_periodicity, 20) )
+        strcpy(sdk_periodicity, DEFAULT_PERIODICITY_TEXT);
+    }
+    return sdk_periodicity;
+SDK_SET_PLANETMINT_API:
+    if( strlen( sdk_planetmintapi) == 0 ){
+      if( !readfile(SETTINGS_API_FILE, (uint8_t*)sdk_planetmintapi, 100) )
+        strcpy(sdk_planetmintapi, DEFAULT_API_TEXT);
+    }
+    return sdk_planetmintapi;
+SDK_SET_PLANETMINT_CHAINID:
+    if( strlen( sdk_chainid) == 0 ){
+      if( !readfile(SETTINGS_CHAINID_FILE, (uint8_t*)sdk_chainid, 30) )
+        strcpy(sdk_chainid, DEFAULT_API_TEXT);
+    }
+    return sdk_chainid;
+SDK_SET_PLANETMINT_DENOM:
+    if( strlen( sdk_denom) == 0 )
+      if( !readfile(SETTINGS_DENOM_FILE, (uint8_t*)sdk_chainid, 20) )
+        strcpy(sdk_denom, DEFAULT_DENOM_TEXT);
+    return sdk_denom;
+default:
+    return NULL;
+  }
+}
+
+bool setSetting(uint32_t index, const char* replacementText){
+  bool retValue = false;
+  switch(index) {
+SDK_SET_NOTARIZTATION_PERIODICITY:
+    retValue = rddl_writefile( SETTINGS_PERIODICITY_FILE, (uint8_t*)replacementText, strlen(replacementText));
+    memset(sdk_periodicity,0,20);
+    break;  
+SDK_SET_PLANETMINT_API:   
+    retValue = rddl_writefile( SETTINGS_API_FILE, (uint8_t*)replacementText, strlen(replacementText));
+    memset(sdk_planetmintapi,0,100);
+    break;  
+SDK_SET_PLANETMINT_CHAINID:
+    retValue = rddl_writefile( SETTINGS_CHAINID_FILE, (uint8_t*)replacementText, strlen(replacementText));
+    memset(sdk_chainid,0,30);
+    break;  
+SDK_SET_PLANETMINT_DENOM:
+    retValue = rddl_writefile( SETTINGS_DENOM_FILE, (uint8_t*)replacementText, strlen(replacementText));
+    memset(sdk_denom,0,20);
+    break;  
+default:
+    retValue =  false;
+  }
+  return retValue;
+}

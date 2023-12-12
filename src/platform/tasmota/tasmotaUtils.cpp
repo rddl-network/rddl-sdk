@@ -3,24 +3,22 @@
 #include "planetmintgo.h"
 #include "tasmotaUtils.h"
 #include "HttpClientLight.h"
+#include "rddlSDKSettings.h"
 
 
 extern bool TfsSaveFile(const char *fname, const uint8_t *buf, uint32_t len);
 extern bool TfsLoadFile(const char *fname, uint8_t *buf, uint32_t len);
 extern int  ResponseAppend_P(const char* format, ...);
+extern bool SettingsUpdateText(uint32_t index, const char* replace_me);
+extern char* SettingsText(uint32_t index);
 
-
-static const char* getPlanetmintAPI() {
-    // Implement your logic to get the API URL here
-    return "https://testnet-api.rddl.io";
-}
 
 
 bool hasMachineBeenAttestedTasmota(const char* g_ext_pub_key_planetmint) {
   HTTPClientLight http;
 
   String uri = "/planetmint/machine/get_machine_by_public_key/";
-  uri = getPlanetmintAPI() + uri;
+  uri = tasmotaGetSetting( SDK_SET_PLANETMINT_API) + uri;
   uri = uri + g_ext_pub_key_planetmint;
   http.begin(uri);
   http.addHeader("Content-Type", "application/json");
@@ -96,7 +94,7 @@ char* getGPSstringTasmota(){
 int broadcastTransactionTasmota( char* tx_payload, char *http_answ){
   HTTPClientLight http;
   String uri = "/cosmos/tx/v1beta1/txs";
-  uri = getPlanetmintAPI() + uri;
+  uri = tasmotaGetSetting( SDK_SET_PLANETMINT_API) + uri;
   http.begin(uri);
   http.addHeader("accept", "application/json");
   http.addHeader("Content-Type", "application/json");
@@ -114,7 +112,7 @@ bool getAccountInfoTasmota( const char* account_address, uint64_t* account_id, u
   HTTPClientLight http;
   String uri = "/cosmos/auth/v1beta1/account_info/";
 
-  uri = getPlanetmintAPI() + uri;
+  uri = tasmotaGetSetting( SDK_SET_PLANETMINT_API) + uri;
   uri = uri + account_address;
   http.begin(uri);
   http.addHeader("Content-Type", "application/json");
@@ -142,4 +140,14 @@ int ResponseAppendAbstTasmota(const char* msg){
 
 int tasmotaSerialPrint(const char* msg){
   return Serial.println(msg);
+}
+
+
+char* tasmotaGetSetting(uint32_t index){
+  return SettingsText(index);
+}
+
+
+bool tasmotaSetSetting(uint32_t index, const char* replacementText){
+  return SettingsUpdateText( index, replacementText);
 }

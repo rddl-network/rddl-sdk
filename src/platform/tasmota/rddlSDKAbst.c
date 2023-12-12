@@ -29,6 +29,7 @@
 #include "rddlSDKAbst.h"
 #include "tasmotaUtils.h"
 
+
 uint8_t sdk_priv_key_planetmint[32+1] = {0};
 uint8_t sdk_priv_key_liquid[32+1] = {0};
 uint8_t sdk_pub_key_planetmint[33+1] = {0};
@@ -42,7 +43,6 @@ char sdk_ext_pub_key_liquid[EXT_PUB_KEY_SIZE+1] = {0};
 char sdk_machineid_public_key_hex[33*2+1] = {0};
 
 char sdk_planetmintapi[100] = {0};
-char sdk_accountid[20] = {0};
 char sdk_chainid[30] = {0};
 char sdk_denom[20] = {0};
 
@@ -109,7 +109,6 @@ bool getAccountInfo( uint64_t* account_id, uint64_t* sequence )
 }
 
 
-
 int broadcast_transaction( char* tx_payload ){
   char http_answr[512];
   int status = broadcastTransactionTasmota(tx_payload, http_answr);
@@ -120,4 +119,14 @@ int broadcast_transaction( char* tx_payload ){
   ResponseAppendAbst(responseArr);
 
   return status;
+}
+
+
+char* getSetting(uint32_t index){
+  return tasmotaGetSetting(index);
+}
+
+
+bool setSetting(uint32_t index, const char* replacementText){
+  return tasmotaSetSetting( index, replacementText);
 }
