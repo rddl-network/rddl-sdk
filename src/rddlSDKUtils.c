@@ -296,6 +296,11 @@ int registerMachine(void* anyMsg, const char* machineCategory, const char* manuf
   machineMsg.creator = (char*)sdk_address;
   machineMsg.machine = &machine;
   int ret = generateAnyAttestMachineMsg((Google__Protobuf__Any*)anyMsg, &machineMsg);
+
+#ifdef LINUX_MACHINE
+  free(deviceDescription);
+#endif
+
   if( ret<0 )
   {
     sprintf(responseArr, "No Attestation message\n");
@@ -316,5 +321,10 @@ int sendMessages( void* pAnyMsg) {
   sprintf(responseArr, "TX broadcast:\n");
   ResponseAppendAbst(responseArr);
   int broadcast_return = broadcast_transaction( tx_payload );
+
+#ifdef LINUX_MACHINE
+  free(tx_payload);
+#endif
+
   return broadcast_return;
 }
