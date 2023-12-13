@@ -191,6 +191,10 @@ char* getGPSstring(){
   return NULL;
 }
 
+uint8_t* abstGetStack( size_t size ){
+  return (uint8_t*) malloc( size );
+}
+void abstClearStack() {}
 
 bool getAccountInfo( uint64_t* account_id, uint64_t* sequence )
 {

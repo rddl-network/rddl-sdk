@@ -84,6 +84,14 @@ uint8_t* sdkReadSeed(char* seed_arr, int* seed_size){
 }
 
 
+uint8_t* sdkGetStack( size_t size ){
+  return abstGetStack(size);
+}
+
+void sdkClearStack(){
+  abstClearStack();
+}
+
 void runRDDLSDKMachineAttestation(const char* machineCategory, const char* manufacturer, const char* cid ){
   Google__Protobuf__Any anyMsg = GOOGLE__PROTOBUF__ANY__INIT;
   clearStack();
@@ -101,7 +109,7 @@ void runRDDLSDKMachineAttestation(const char* machineCategory, const char* manuf
 
 void runRDDLSDKNotarizationWorkflow(const char* data_str, size_t data_length){
   Google__Protobuf__Any anyMsg = GOOGLE__PROTOBUF__ANY__INIT;
-  clearStack();
+  abstClearStack();
   if( !getPlntmntKeys() )
     return;
 
@@ -109,7 +117,7 @@ void runRDDLSDKNotarizationWorkflow(const char* data_str, size_t data_length){
     return;
 
   size_t data_size = data_length;
-  uint8_t* local_data = getStack( data_size+2 );
+  uint8_t* local_data = abstGetStack( data_size+2 );
 
   memcpy( local_data, data_str, data_size);
   char signature[128+1] = {0};
@@ -132,6 +140,7 @@ void runRDDLSDKNotarizationWorkflow(const char* data_str, size_t data_length){
 
 #ifdef LINUX_MACHINE
   free(cid_str);
+  free(local_data);
 #endif
 
   ResponseJsonEnd();

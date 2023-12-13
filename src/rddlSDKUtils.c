@@ -13,7 +13,7 @@
 #ifdef LINUX_MACHINE
   #include "base64.h"
 #else
-  #include "base64_plntmnt.h"
+  #include "libs/base64_planetmint/src/base64_plntmnt.h"
 #endif
 #include "curves.h"  
 #include "secp256k1.h"
@@ -54,7 +54,7 @@ char* create_transaction( void* anyMsg, char* tokenAmount )
     return NULL;
 
   size_t allocation_size = ceil( ((tx_size+3-1)/3)*4)+2 + 150;
-  char* payload = (char*) getStack( allocation_size );
+  char* payload = (char*) abstGetStack( allocation_size );
   if( payload )
   {
     memset( payload, 0, allocation_size );
@@ -264,7 +264,7 @@ int registerMachine(void* anyMsg, const char* machineCategory, const char* manuf
     gps_str = "";
   
   size_t desLength = strlen( manufacturer) + strlen( machineCategory )+ 36;
-  char* deviceDescription = (char*)getStack( desLength );
+  char* deviceDescription = (char*)abstGetStack( desLength );
   sprintf( deviceDescription, "{\"Category\":\"%s\", \"Manufacturer\":\"%s\"}", machineCategory, manufacturer);
 
 
@@ -296,6 +296,11 @@ int registerMachine(void* anyMsg, const char* machineCategory, const char* manuf
   machineMsg.creator = (char*)sdk_address;
   machineMsg.machine = &machine;
   int ret = generateAnyAttestMachineMsg((Google__Protobuf__Any*)anyMsg, &machineMsg);
+
+#ifdef LINUX_MACHINE
+  free(deviceDescription);
+#endif
+
   if( ret<0 )
   {
     sprintf(responseArr, "No Attestation message\n");
@@ -316,5 +321,10 @@ int sendMessages( void* pAnyMsg) {
   sprintf(responseArr, "TX broadcast:\n");
   ResponseAppendAbst(responseArr);
   int broadcast_return = broadcast_transaction( tx_payload );
+
+#ifdef LINUX_MACHINE
+  free(tx_payload);
+#endif
+
   return broadcast_return;
 }

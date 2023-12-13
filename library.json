@@ -17,10 +17,33 @@
   ],
   "build": {
     "srcDir": ".",
-    "srcFilter": "+<src/rddlSDKAPI.c> +<src/rddlSDKUtils.c> +<include/*> +<src/platform/tasmota/rddlSDKAbst.c> +<src/platform/tasmota/tasmotaUtils.cpp> -<src/platform/linux/*>",
+    "srcFilter": [
+      "+<src/rddlSDKAPI.c>",
+      "+<src/rddlSDKUtils.c>",
+      "+<include/*>",
+      "+<src/platform/tasmota/rddlSDKAbst.c>",
+      "+<src/platform/tasmota/tasmotaUtils.cpp>",
+      "+<libs/base64_planetmint/src/*>",
+      "+<libs/librddl/src/*>",
+      "+<libs/librddl/libs/proto/>",
+      "+<libs/librddl/libs/trezor-crypto/>",
+      "+<libs/librddl/libs/trezor-crypto/chacha20poly1305>",
+      "+<libs/librddl/libs/trezor-crypto/ed25519-donna>",
+      "+<libs/librddl/libs/trezor-crypto/aes>",
+      "-<src/platform/linux/*>",
+      "-<libs/librddl/libs/trezor-crypto/gui>",
+      "-<libs/librddl/libs/trezor-crypto/tests>"
+    ],
     "includeDir": ".",
     "flags": [
-      "-I include"
+      "-I include",
+      "-I libs/base64_planetmint/inc",
+      "-I libs/librddl/inc",
+      "-I libs/librddl/libs/proto",
+      "-I libs/librddl/libs/trezor-crypto",
+      "-I libs/librddl/libs/trezor-crypto/aes",
+      "-I libs/librddl/libs/trezor-crypto/chacha20poly1305",
+      "-I libs/librddl/libs/trezor-crypto/ed25519-donna"
     ]
   },
   "version": "0.1.0"

@@ -130,3 +130,10 @@ char* getSetting(uint32_t index){
 bool setSetting(uint32_t index, const char* replacementText){
   return tasmotaSetSetting( index, replacementText);
 }
+
+uint8_t* abstGetStack( size_t size ){
+  return getStack( size );
+}
+void abstClearStack() {
+  clearStack();
+}
