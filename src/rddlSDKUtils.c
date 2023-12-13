@@ -13,7 +13,7 @@
 #ifdef LINUX_MACHINE
   #include "base64.h"
 #else
-  #include "base64_plntmnt.h"
+  #include "libs/base64_planetmint/src/base64_plntmnt.h"
 #endif
 #include "curves.h"  
 #include "secp256k1.h"

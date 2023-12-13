@@ -17,7 +17,7 @@
   ],
   "build": {
     "srcDir": ".",
-    "srcFilter": "+<src/rddlSDKAPI.c> +<src/rddlSDKUtils.c> +<include/*> +<src/platform/tasmota/rddlSDKAbst.c> +<src/platform/tasmota/tasmotaUtils.cpp> -<src/platform/linux/*>",
+    "srcFilter": "+<src/rddlSDKAPI.c> +<src/rddlSDKUtils.c> +<include/*> +<src/platform/tasmota/rddlSDKAbst.c> +<src/platform/tasmota/tasmotaUtils.cpp> +<libs/base64_planetmint/src/*> -<src/platform/linux/*>",
     "includeDir": ".",
     "flags": [
       "-I include"
