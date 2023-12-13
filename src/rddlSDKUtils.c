@@ -54,7 +54,7 @@ char* create_transaction( void* anyMsg, char* tokenAmount )
     return NULL;
 
   size_t allocation_size = ceil( ((tx_size+3-1)/3)*4)+2 + 150;
-  char* payload = (char*) getStack( allocation_size );
+  char* payload = (char*) abstGetStack( allocation_size );
   if( payload )
   {
     memset( payload, 0, allocation_size );
@@ -264,7 +264,7 @@ int registerMachine(void* anyMsg, const char* machineCategory, const char* manuf
     gps_str = "";
   
   size_t desLength = strlen( manufacturer) + strlen( machineCategory )+ 36;
-  char* deviceDescription = (char*)getStack( desLength );
+  char* deviceDescription = (char*)abstGetStack( desLength );
   sprintf( deviceDescription, "{\"Category\":\"%s\", \"Manufacturer\":\"%s\"}", machineCategory, manufacturer);
 
 
