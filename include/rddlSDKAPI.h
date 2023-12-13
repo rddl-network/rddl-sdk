@@ -1,6 +1,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#define SDK_STACK_LIMIT 7168
+
 
 const char* sdkGetRDDLAddress();
 const char* sdkGetExtPubKeyLiquid();
