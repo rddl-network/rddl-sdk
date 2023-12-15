@@ -5,6 +5,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <string.h>
+#include <stdarg.h>
 
  
 
@@ -53,6 +54,10 @@ static char curlOutput[1024];
 
 char responseArr[4096];
 
+
+PoPInfo popParticipation;
+void resetPopInfo(){  memset( &popParticipation, 0, sizeof(PoPInfo)); }
+
 bool hasMachineBeenAttested() {
   bool status = hasMachineBeenAttestedTasmota((const char*)sdk_ext_pub_key_planetmint);
 
@@ -80,32 +85,36 @@ int printMsg(const char* msg)
 }
 
 
-int ResponseAppendAbst(const char* msg) 
-{
-  return ResponseAppendAbstTasmota(msg);
-}
-
-
-int ResponseJsonEnd(void)
-{
-  return ResponseAppendAbst(PSTR("}}"));
-}
-
-
 char* getGPSstring(){
   return getGPSstringTasmota();
 }
 
+void AddLogLineAbst(const char* msg, ...)   
+{
+  va_list args;
+  va_start(args, msg);
+  vAddLogLineTasmota(msg, args); // Using vprintf as an example of working with va_list
+  va_end(args);
+}
+
+void vAddLogLineAbst(const char* msg, va_list args)   
+{
+  vAddLogLineTasmota(msg, args); // Using vprintf as an example of working with va_list
+}
 
 bool getAccountInfo( uint64_t* account_id, uint64_t* sequence )
 {
   bool ret = getAccountInfoTasmota(sdk_address, account_id, sequence);
   if( !ret ){
     sprintf(responseArr, "Account parsing issue\n");
-    ResponseAppendAbst(responseArr);
+    AddLogLineAbst(responseArr);
   }
 
   return ret;
+}
+
+bool getPoPInfo( const char* blockHeight){
+  return getPoPInfoTasmota( blockHeight );
 }
 
 
@@ -114,9 +123,9 @@ int broadcast_transaction( char* tx_payload ){
   int status = broadcastTransactionTasmota(tx_payload, http_answr);
 
   sprintf(responseArr, PSTR(",\"%s\":\"%u\"\n"), "respose code", status);
-  ResponseAppendAbst(responseArr);
+  AddLogLineAbst(responseArr);
   sprintf(responseArr, PSTR(",\"%s\":\"%s\"\n"), "respose string", http_answr);
-  ResponseAppendAbst(responseArr);
+  AddLogLineAbst(responseArr);
 
   return status;
 }

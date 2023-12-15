@@ -1,3 +1,5 @@
+#pragma once
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -26,9 +28,11 @@ bool sdkSetSetting(uint32_t index, const char* replacementText);
 uint8_t* sdkGetStack( size_t size );
 void sdkClearStack();
 
-
 void runRDDLSDKMachineAttestation(const char* machineCategory, const char* manufacturer, const char* cid );
 void runRDDLSDKNotarizationWorkflow(const char* data_str, size_t data_length);
+
+bool getPoPFromChain( const char* blockHeigth );
+
 
 
 #ifdef __cplusplus

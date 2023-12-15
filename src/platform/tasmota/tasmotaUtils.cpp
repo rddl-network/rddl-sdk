@@ -1,9 +1,11 @@
 #include <cstdint>
 #include <cstddef>
+#include <stdarg.h>
 #include "planetmintgo.h"
 #include "tasmotaUtils.h"
 #include "HttpClientLight.h"
 #include "rddlSDKSettings.h"
+#include "rddlSDKUtils.h"
 
 
 extern bool TfsSaveFile(const char *fname, const uint8_t *buf, uint32_t len);
@@ -11,6 +13,8 @@ extern bool TfsLoadFile(const char *fname, uint8_t *buf, uint32_t len);
 extern int  ResponseAppend_P(const char* format, ...);
 extern bool SettingsUpdateText(uint32_t index, const char* replace_me);
 extern char* SettingsText(uint32_t index);
+extern void AddLogData(uint32_t loglevel, const char* log_data, const char* log_data_payload = nullptr, const char* log_data_retained = nullptr);
+extern char * ext_vsnprintf_malloc_P(const char * fmt_P, va_list va);
 
 
 
@@ -132,10 +136,38 @@ bool getAccountInfoTasmota( const char* account_address, uint64_t* account_id, u
   return ret;
 }
 
+bool getPoPInfoTasmota( const char* blockHeight){
+  // get account info from planetmint-go
+  HTTPClientLight http;
+  String uri = "/planetmint/planetmint-go/dao/get_challenge/";
 
-int ResponseAppendAbstTasmota(const char* msg){
-  return ResponseAppend_P(msg);
+  uri = tasmotaGetSetting( SDK_SET_PLANETMINT_API) + uri;
+  uri = uri + blockHeight;
+  AddLogLineTasmota( "uri : %s", uri.c_str() );
+  http.begin(uri);
+  http.addHeader("Content-Type", "application/json");
+
+  int httpResponseCode = http.GET();
+  char* buffer = (char*) getStack(   http.getSize()+ 3);
+  char* result = strcpy( buffer, http.getString().c_str() );
+  return getPoPInfoFromJSON( result);
 }
+
+void AddLogLineTasmota(const char* msg, ...){
+  va_list args;
+  va_start(args, msg);
+  vAddLogLineTasmota( msg, args);
+  va_end(args);
+}
+
+void vAddLogLineTasmota(const char* msg, va_list args){
+  int loglevel = 2;
+  char* log_data = ext_vsnprintf_malloc_P(msg, args);
+  if (log_data == NULL) { return; }
+  AddLogData(loglevel, log_data);
+  free(log_data);
+}
+
 
 
 int tasmotaSerialPrint(const char* msg){

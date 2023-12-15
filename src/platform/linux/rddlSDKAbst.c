@@ -9,6 +9,7 @@
 #include <errno.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <stdarg.h>
 
  
 #ifdef TASMOTA
@@ -42,6 +43,7 @@
 
 #include "rddlSDKAbst.h"
 #include "rddlSDKSettings.h"
+#include "rddlSDKUtils.h"
 #include "configFile.h"
 
 uint8_t sdk_priv_key_planetmint[32+1] = {0};
@@ -49,7 +51,6 @@ uint8_t sdk_priv_key_liquid[32+1] = {0};
 uint8_t sdk_pub_key_planetmint[33+1] = {0};
 uint8_t sdk_pub_key_liquid[33+1] = {0};
 uint8_t sdk_machineid_public_key[33+1]={0}; 
-
 
 char sdk_address[64] = {0};
 char sdk_ext_pub_key_planetmint[EXT_PUB_KEY_SIZE+1] = {0};
@@ -69,6 +70,8 @@ static char curlOutput[1024];
 
 char responseArr[4096];
 
+PoPInfo popParticipation;
+void resetPopInfo(){  memset( &popParticipation, 0, sizeof(PoPInfo)); }
 
 /* MAKE IT GENERIC */
 /* Bir urlye http get yapip attested olup olmadigina bakiyor */
@@ -78,8 +81,8 @@ bool hasMachineBeenAttested() {
 
   // Construct the cURL command
   snprintf(curlCmd, sizeof(curlCmd),
-            "curl -X GET \"https://testnet-api.rddl.io/planetmint/machine/get_machine_by_public_key/%s\" -H \"accept: application/json\"",
-            sdk_ext_pub_key_planetmint);
+            "curl -X GET \"%s/planetmint/machine/get_machine_by_public_key/%s\" -H \"accept: application/json\"",
+            DEFAULT_API_TEXT, sdk_ext_pub_key_planetmint);
 
   printf("\n%s\n", curlCmd);
   FILE* pipe = popen(curlCmd, "r");
@@ -170,19 +173,18 @@ int printMsg(const char* msg){
 }
 
 
-int ResponseAppendAbst(const char* msg)   
+void AddLogLineAbst(const char* msg, ...)   
 {
-  printf("%s\n", msg);
-  return 0;
+  va_list args;
+  va_start(args, msg);
+  vAddLogLineAbst(msg, args);
+  va_end(args);
 }
 
-
-/* MAKE IT GENERIC */
-/* Cozemedim */
-int ResponseJsonEnd(void)
-{
-  return ResponseAppendAbst(PSTR("}}"));
+void vAddLogLineAbst( const char* msg, va_list args ){
+  vprintf(msg, args);
 }
+
 
 
 /* MAKE IT GENERIC */
@@ -200,8 +202,8 @@ bool getAccountInfo( uint64_t* account_id, uint64_t* sequence )
 {
   // Construct the cURL command
   snprintf(curlCmd, sizeof(curlCmd),
-            "curl -X GET \"https://testnet-api.rddl.io/cosmos/auth/v1beta1/account_info/%s\" -H \"accept: application/json\"",
-            sdk_address);
+            "curl -X GET \"%s/cosmos/auth/v1beta1/account_info/%s\" -H \"accept: application/json\"",
+            DEFAULT_API_TEXT, sdk_address);
 
   FILE* pipe = popen(curlCmd, "r");
 
@@ -233,6 +235,31 @@ bool getAccountInfo( uint64_t* account_id, uint64_t* sequence )
   return ret;
 }
 
+
+
+
+
+bool getPoPInfo( const char* blockHeight){
+
+  // Construct the cURL command
+  snprintf(curlCmd, sizeof(curlCmd),
+            "curl -X GET \"%s/planetmint/planetmint-go/dao/get_challenge/%s\" -H \"accept: application/json\"",
+            DEFAULT_API_TEXT, blockHeight);
+
+  FILE* pipe = popen(curlCmd, "r");
+
+  if (!pipe) {
+      perror("popen");
+      return false;
+  }
+  while (fgets(curlOutput, sizeof(curlOutput), pipe) != NULL) {
+      printf("%s\n", curlOutput);
+  }
+
+  pclose(pipe);
+
+  return getPoPInfoFromJSON( curlOutput );
+}
 
 /* MAKE IT GENERIC */
 /* Cozemedim */

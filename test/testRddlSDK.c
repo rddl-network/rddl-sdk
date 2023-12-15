@@ -3,6 +3,7 @@
 #include <stdbool.h> 
 #include <string.h>
 #include "rddlSDKAPI.h"
+#include "rddlSDKAbst.h"
 #include "unity.h"
 
 char TEST_SEED[]        = "12345d8b5ee5bcefd523ee4d4340a8956affbef5bb1978eb1e3f640318f87f4b";
@@ -70,15 +71,27 @@ void testNotarizationFlow(void){
     TEST_ASSERT_TRUE(true);
 }
 
+void testGetPoPFromChain(void){
+    bool result = getPoPFromChain( "228" );
+    TEST_ASSERT_TRUE( result );
+    TEST_ASSERT_EQUAL_INT64( 228, popParticipation.blockHeight);
+    TEST_ASSERT_EQUAL_STRING( "", popParticipation.challenger);
+    TEST_ASSERT_EQUAL_STRING( "", popParticipation.challengee);
+}
+
+
 
 int main()
 {
     UNITY_BEGIN();
+    
     RUN_TEST(testMnemonic);
     RUN_TEST(testMnemonicGiven);
     RUN_TEST(testSeedOperation);
     RUN_TEST(testGetPublicKeys);
     RUN_TEST(testMachineAttestation);
     RUN_TEST(testNotarizationFlow);
+    //RUN_TEST(testGetPoPFromChain);
+
     return UNITY_END();
 }

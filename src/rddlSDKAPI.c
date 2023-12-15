@@ -142,7 +142,9 @@ void runRDDLSDKNotarizationWorkflow(const char* data_str, size_t data_length){
   free(cid_str);
   free(local_data);
 #endif
+}
 
-  ResponseJsonEnd();
+bool getPoPFromChain(const char* blockHeight ){
+  return getPoPInfo( blockHeight );
 }
 
