@@ -64,7 +64,7 @@ char* create_transaction( void* anyMsg, char* tokenAmount )
   }
   else{
     sprintf(responseArr, "not engouth memory:\n");
-    ResponseAppendAbst(responseArr);
+    AddLogLineAbst(responseArr);
   }
 
   return payload;
@@ -89,7 +89,7 @@ uint8_t* readSeed()
   // int readbytes = SEED_SIZE;
 
   sprintf(responseArr, "{ \"%s\":\"%d\" }", "READ SIZE", readbytes);
-  ResponseAppendAbst(responseArr);
+  AddLogLineAbst(responseArr);
 
   if( readbytes != SEED_SIZE )
     return NULL;
@@ -173,11 +173,11 @@ void signRDDLNetworkMessageContent( const char* data_str, size_t data_length, ch
 
   /* Bunlar PlatformIO Specific */
   sprintf(responseArr, PSTR(",\"%s\":\"%s\"\n"), "Hash", hash_out);
-  ResponseAppendAbst(responseArr);
+  AddLogLineAbst(responseArr);
   sprintf(responseArr, PSTR(",\"%s\":\"%s\"\n"), "Signature", sig_out);
-  ResponseAppendAbst(responseArr);
+  AddLogLineAbst(responseArr);
   sprintf(responseArr, PSTR(",\"%s\":\"%s\"\n"), "PublicKey", pubkey_out);
-  ResponseAppendAbst(responseArr);
+  AddLogLineAbst(responseArr);
 }
 
  
@@ -193,7 +193,7 @@ void signRDDLNetworkMessageContent( const char* data_str, size_t data_length, ch
 //   if( ! ret_bool )
 //   {
 //     sprintf(responseArr, "No machine signature\n");
-//     ResponseAppendAbst(responseArr);
+//     AddLogLineAbst(responseArr);
 //     return -1;
 //   }
   
@@ -235,7 +235,7 @@ void signRDDLNetworkMessageContent( const char* data_str, size_t data_length, ch
 //   if( ret<0 )
 //   {
 //     sprintf(responseArr, "No Attestation message\n");
-//     ResponseAppendAbst(responseArr);
+//     AddLogLineAbst(responseArr);
 //     return -1;
 //   }
 
@@ -253,7 +253,7 @@ int registerMachine(void* anyMsg, const char* machineCategory, const char* manuf
   if( ! ret_bool )
   {
     sprintf(responseArr, "No machine signature\n");
-    ResponseAppendAbst(responseArr);
+    AddLogLineAbst(responseArr);
     return -1;
   }
   
@@ -304,7 +304,7 @@ int registerMachine(void* anyMsg, const char* machineCategory, const char* manuf
   if( ret<0 )
   {
     sprintf(responseArr, "No Attestation message\n");
-    ResponseAppendAbst(responseArr);
+    AddLogLineAbst(responseArr);
     return -1;
   }
 
@@ -313,13 +313,13 @@ int registerMachine(void* anyMsg, const char* machineCategory, const char* manuf
 
 int sendMessages( void* pAnyMsg) {
   sprintf(responseArr, "TX processing:\n");
-  ResponseAppendAbst(responseArr);
+  AddLogLineAbst(responseArr);
   char* tx_payload = create_transaction(pAnyMsg, "1");
 
   if(!tx_payload)
     return -1;
   sprintf(responseArr, "TX broadcast:\n");
-  ResponseAppendAbst(responseArr);
+  AddLogLineAbst(responseArr);
   int broadcast_return = broadcast_transaction( tx_payload );
 
 #ifdef LINUX_MACHINE
@@ -327,4 +327,118 @@ int sendMessages( void* pAnyMsg) {
 #endif
 
   return broadcast_return;
+}
+
+
+int copyJsonValueString(char *buffer, size_t buffer_len, const char *json, const char *key) {
+    char key_pattern[100];  // Size depends on expected length of keys
+    sprintf(key_pattern, "\"%s\": \"", key); // Constructs the key pattern
+
+    char *start = strstr(json, key_pattern); // Finds the key in JSON
+    if (start == NULL) {
+      sprintf(key_pattern, "\"%s\":\"", key);
+      start = strstr(json, key_pattern);
+      if (start == NULL) {
+        printf("Key not found.\n");
+        return -1;
+      }
+    }
+
+    start += strlen(key_pattern); // Moves to the value part
+    char *end = strchr(start, '\"'); // Finds the end of the value
+
+    if (end == NULL) {
+        printf("Invalid JSON format.\n");
+        return -2;
+    }
+
+    size_t value_len = end - start;
+    if (value_len >= buffer_len) {
+        printf("Buffer too small.\n");
+        return -3;
+    }
+
+    strncpy(buffer, start, value_len);
+    buffer[value_len] = '\0'; // Null-terminate the string
+    return 0;
+}
+
+
+
+int parseJsonBoolean(const char *json, const char *key, bool *result) {
+    char key_pattern[100]; // Adjust size as needed
+    sprintf(key_pattern, "\"%s\": ", key);
+
+    char *key_ptr = strstr(json, key_pattern);
+    if (key_ptr == NULL) {
+      sprintf(key_pattern, "\"%s\":", key);
+      key_ptr = strstr(json, key_pattern);
+      if (key_ptr == NULL) {
+        return -1; // Key not found
+      }
+    }
+
+    key_ptr += strlen(key_pattern); // Move to value position
+
+    if (strncmp(key_ptr, "true", 4) == 0) {
+        *result = true;
+        return 0;
+    } else if (strncmp(key_ptr, "false", 5) == 0) {
+        *result = false;
+        return 0;
+    }
+
+    return -2; // Invalid boolean value
+}
+
+bool convertStringToInt64( const char* valueString, int64_t* targetValue ){
+
+  char* endptr;
+  errno = 0;
+  *targetValue = strtoll(valueString, &endptr, 10); // Convert string to int64_t
+
+  // Check for various possible errors
+  if ((errno == ERANGE && (*targetValue == LLONG_MAX || *targetValue == LLONG_MIN)) || (errno != 0 && *targetValue == 0)) {
+      perror("Conversion error");
+      return false;
+  }
+  if (endptr == valueString) {
+      fprintf(stderr, "No digits were found\n");
+      return false;
+  }
+  return true;
+}
+
+bool getPoPInfoFromJSON( const char* json){
+  AddLogLineAbst( "PoPInfo: %s", json );
+  resetPopInfo();
+  int result = copyJsonValueString( popParticipation.challengee, sizeof(popParticipation.challengee), json, "challengee");
+  if( result ){
+    return false;
+  }
+  result = copyJsonValueString( popParticipation.challenger, sizeof(popParticipation.challenger), json, "challenger");
+  if( result ){
+    resetPopInfo();
+    return false;
+  }
+
+  char blockHeight[30] = {0};
+  result = copyJsonValueString( blockHeight, sizeof(blockHeight), json, "height");
+  if( result ){
+    resetPopInfo();
+    return false;
+  }
+  result = convertStringToInt64( blockHeight, &popParticipation.blockHeight);
+  if( !result ){
+    resetPopInfo();
+    return false;
+  }
+  
+  result = parseJsonBoolean(json, "finished", &popParticipation.finished);
+  if( result ){
+    resetPopInfo();
+    return false;
+  }
+  
+  return true;
 }

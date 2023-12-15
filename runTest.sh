@@ -1,5 +1,5 @@
 #!/bin/bash
 
 cd build
-./test/testRddlSDK
+./test/testRddlSDK && ./test/testSDKUtils 
 cd ..

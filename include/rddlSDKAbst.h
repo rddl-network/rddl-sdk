@@ -1,3 +1,5 @@
+#pragma once
+
 #include "stdbool.h"
 #include "stddef.h"
 
@@ -39,14 +41,25 @@ extern char sdk_denom[20];
 extern bool sdk_readSeed;
 extern char responseArr[4096];
 
+typedef struct PoPInfo {
+    int64_t blockHeight;
+    char challenger[64];
+    char challengee[64];
+    bool finished;
+} PoPInfo;
+
+extern PoPInfo popParticipation;
+
+void resetPopInfo();
 bool hasMachineBeenAttested();
 bool rddl_writefile( const char* filename, uint8_t* content, size_t length);
 int readfile( const char* filename, uint8_t* content, size_t length);
 int printMsg(const char* msg);
-int ResponseAppendAbst(const char* msg);
-int ResponseJsonEnd(void);
+void AddLogLineAbst(const char* msg, ...);
+void vAddLogLineAbst(const char* msg, va_list args);
 char* getGPSstring();
 bool getAccountInfo( uint64_t* account_id, uint64_t* sequence );
+bool getPoPInfo( const char* blockHeight);
 int broadcast_transaction( char* tx_payload );
 char* getSetting(uint32_t index);
 bool setSetting(uint32_t index, const char* replacementText);
