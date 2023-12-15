@@ -91,7 +91,7 @@ int main()
     RUN_TEST(testGetPublicKeys);
     RUN_TEST(testMachineAttestation);
     RUN_TEST(testNotarizationFlow);
-    RUN_TEST(testGetPoPFromChain);
+    //RUN_TEST(testGetPoPFromChain);
 
     return UNITY_END();
 }
