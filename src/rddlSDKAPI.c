@@ -128,6 +128,7 @@ void runRDDLSDKNotarizationWorkflow(const char* data_str, size_t data_length){
 
   // store cid
   rddl_writefile( cid_str, (uint8_t*)local_data, data_size );
+  checkNumOfCIDFiles(CID_FILE_DIRECTORY);
 
   // register CID
   //registerCID( cid_str );

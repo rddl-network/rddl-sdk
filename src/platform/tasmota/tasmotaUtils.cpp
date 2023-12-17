@@ -6,6 +6,8 @@
 #include "HttpClientLight.h"
 #include "rddlSDKSettings.h"
 #include "rddlSDKUtils.h"
+#include <LittleFS.h>
+#include <vector>
 
 
 extern bool TfsSaveFile(const char *fname, const uint8_t *buf, uint32_t len);
@@ -15,8 +17,10 @@ extern bool SettingsUpdateText(uint32_t index, const char* replace_me);
 extern char* SettingsText(uint32_t index);
 extern void AddLogData(uint32_t loglevel, const char* log_data, const char* log_data_payload = nullptr, const char* log_data_retained = nullptr);
 extern char * ext_vsnprintf_malloc_P(const char * fmt_P, va_list va);
+extern void CmndStatusResponse(uint32_t index);
+extern fs::FS* TfsFileSysHandle();
 
-
+std::vector<std::pair<std::string, time_t>> cid_files;
 
 bool hasMachineBeenAttestedTasmota(const char* g_ext_pub_key_planetmint) {
   HTTPClientLight http;
@@ -183,3 +187,87 @@ char* tasmotaGetSetting(uint32_t index){
 bool tasmotaSetSetting(uint32_t index, const char* replacementText){
   return SettingsUpdateText( index, replacementText);
 }
+
+
+/* It is faster to just browse through the names of the files without opening them. */
+int tasmotaGetNumOfCIDFiles(const char *path){
+  FS* filesystem = TfsFileSysHandle();
+  if( !filesystem )
+    Serial.println("Failed to mount file system");
+
+  File dir = filesystem->open(path);
+  String nextFile = dir.getNextFileName();
+
+  int cnt=0;
+  while (count--) {
+      if( nextFile.length() > 20 ){
+        File currFile = filesystem->open(nextFile.c_str());
+        cnt++;
+      }
+      nextFile = dir.getNextFileName();
+  }
+
+  dir.close();
+  return cnt;
+}
+
+
+/* Depending on the number of files, this function may take minutes*/
+void tasmotaGetCIDFiles(const char *path){
+    FS* filesystem = TfsFileSysHandle();
+  if( !filesystem )
+    Serial.println("Failed to mount file system");
+  
+  File dir = filesystem->open(path);
+
+  while (true) {
+    File currFile = dir.openNextFile();
+    if (!currFile)
+      break;
+
+    if( strlen(currFile.name()) > 20 ){
+      auto temp = std::make_pair<std::string, time_t>(std::string{currFile.name()}, currFile.getLastWrite());
+      cid_files.push_back(temp);
+    }
+    
+    currFile.close();
+    currFile = dir.openNextFile();
+
+    /* Since the process takes a long time, give time to other tasks to work.*/
+    delay(20);
+  }
+
+  dir.close();
+}
+
+
+void tasmotaSortCIDFiles(){
+  std::sort(cid_files.begin(), cid_files.end(), [](const std::pair<std::string, time_t> &a, const std::pair<std::string, time_t> &b){
+    return a.second > b.second;
+  });
+}
+
+
+/* Delete last element on cid files vector, Return -1 if vector is empty */
+int tasmotaDeleteOldestCIDFiles(){
+  if(cid_files.empty())
+    return -1;
+
+  cid_files.pop_back();
+  return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -17,8 +17,10 @@ void vAddLogLineTasmota(const char* msg, va_list args);
 int tasmotaSerialPrint(const char* msg);
 char* tasmotaGetSetting(uint32_t index);
 bool tasmotaSetSetting(uint32_t index, const char* replacementText);
-
-
+int tasmotaGetNumOfCIDFiles(const char *path);
+void tasmotaGetCIDFiles(const char *path);
+void tasmotaSortCIDFiles();
+void tasmotaDeleteOldestCIDFiles();
 
 #ifdef __cplusplus
 }

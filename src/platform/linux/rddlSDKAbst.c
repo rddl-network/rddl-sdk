@@ -10,7 +10,10 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdarg.h>
-
+#include <dirent.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <time.h>
  
 #ifdef TASMOTA
 #include "base64_plntmnt.h"
@@ -69,6 +72,7 @@ static char curlCmd[256];
 static char curlOutput[1024];
 
 char responseArr[4096];
+uint32_t num_of_cid_files = 0;
 
 PoPInfo popParticipation;
 void resetPopInfo(){  memset( &popParticipation, 0, sizeof(PoPInfo)); }
@@ -293,25 +297,25 @@ int broadcast_transaction( char* tx_payload ){
 
 char* getSetting(uint32_t index){
   switch(index) {
-SDK_SET_NOTARIZTATION_PERIODICITY:
+case SDK_SET_NOTARIZTATION_PERIODICITY:
     if( strlen( sdk_periodicity) == 0 ){
       if( !readfile(SETTINGS_PERIODICITY_FILE, (uint8_t*)sdk_periodicity, 20) )
         strcpy(sdk_periodicity, DEFAULT_PERIODICITY_TEXT);
     }
     return sdk_periodicity;
-SDK_SET_PLANETMINT_API:
+case SDK_SET_PLANETMINT_API:
     if( strlen( sdk_planetmintapi) == 0 ){
       if( !readfile(SETTINGS_API_FILE, (uint8_t*)sdk_planetmintapi, 100) )
         strcpy(sdk_planetmintapi, DEFAULT_API_TEXT);
     }
     return sdk_planetmintapi;
-SDK_SET_PLANETMINT_CHAINID:
+case SDK_SET_PLANETMINT_CHAINID:
     if( strlen( sdk_chainid) == 0 ){
       if( !readfile(SETTINGS_CHAINID_FILE, (uint8_t*)sdk_chainid, 30) )
         strcpy(sdk_chainid, DEFAULT_API_TEXT);
     }
     return sdk_chainid;
-SDK_SET_PLANETMINT_DENOM:
+case SDK_SET_PLANETMINT_DENOM:
     if( strlen( sdk_denom) == 0 )
       if( !readfile(SETTINGS_DENOM_FILE, (uint8_t*)sdk_chainid, 20) )
         strcpy(sdk_denom, DEFAULT_DENOM_TEXT);
@@ -324,19 +328,19 @@ default:
 bool setSetting(uint32_t index, const char* replacementText){
   bool retValue = false;
   switch(index) {
-SDK_SET_NOTARIZTATION_PERIODICITY:
+case SDK_SET_NOTARIZTATION_PERIODICITY:
     retValue = rddl_writefile( SETTINGS_PERIODICITY_FILE, (uint8_t*)replacementText, strlen(replacementText));
     memset(sdk_periodicity,0,20);
     break;  
-SDK_SET_PLANETMINT_API:   
+case SDK_SET_PLANETMINT_API:   
     retValue = rddl_writefile( SETTINGS_API_FILE, (uint8_t*)replacementText, strlen(replacementText));
     memset(sdk_planetmintapi,0,100);
     break;  
-SDK_SET_PLANETMINT_CHAINID:
+case SDK_SET_PLANETMINT_CHAINID:
     retValue = rddl_writefile( SETTINGS_CHAINID_FILE, (uint8_t*)replacementText, strlen(replacementText));
     memset(sdk_chainid,0,30);
     break;  
-SDK_SET_PLANETMINT_DENOM:
+case SDK_SET_PLANETMINT_DENOM:
     retValue = rddl_writefile( SETTINGS_DENOM_FILE, (uint8_t*)replacementText, strlen(replacementText));
     memset(sdk_denom,0,20);
     break;  
@@ -344,4 +348,75 @@ default:
     retValue =  false;
   }
   return retValue;
+}
+
+
+int abstGetNumOfCIDFiles(const char* path){
+  DIR *dir;
+  struct dirent *entry;
+  int count = 0;
+
+  if ((dir = opendir(path)) != NULL) {
+      while ((entry = readdir(dir)) != NULL) {
+          // Check if the file name length is longer than 20 characters
+          if (strlen(entry->d_name) > 20) {
+              count++;
+          }
+      }
+      closedir(dir);
+  } else {
+      perror("Unable to open directory");
+      return -1;
+  }
+
+  return count;
+}
+
+
+int abstDeleteOldestCIDFile(const char* path){
+  DIR *dir;
+  struct dirent *entry;
+  struct stat fileStat;
+  time_t oldestTime = time(NULL);
+  char oldestFileName[256];
+  int found = 0;
+
+  if(num_of_cid_files < MAX_CID_FILE_SIZE)
+    return -1;
+
+  if ((dir = opendir(path)) != NULL) {
+    while ((entry = readdir(dir)) != NULL) {
+        char filePath[512];
+        sprintf(filePath, "%s/%s", path, entry->d_name);
+
+        if (stat(filePath, &fileStat) == 0) {
+            // Check if the file name length is longer than 20 characters
+            if (strlen(entry->d_name) > 20) {
+                if (difftime(fileStat.st_mtime, oldestTime) < 0) {
+                    oldestTime = fileStat.st_mtime;
+                    strcpy(oldestFileName, entry->d_name);
+                    found = 1;
+                }
+            }
+        }
+    }
+    closedir(dir);
+
+    if (found) {
+        char filePathToDelete[512];
+        sprintf(filePathToDelete, "%s/%s", path, oldestFileName);
+        if (remove(filePathToDelete) != 0) {
+            perror("Unable to delete file");
+            return -1;
+        } else {
+            return 0;
+        }
+    } else {
+        printf("No file found with a name longer than 20 characters.\n");
+        return -1;
+    }
+  } else {
+    perror("Unable to open directory");
+    return -1;
+  }
 }

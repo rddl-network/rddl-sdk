@@ -2,10 +2,14 @@
 #include "stdio.h"
 #include "stdint.h"
 #include <stdbool.h> 
+#include <stdlib.h>
 #include <string.h>
+#include <time.h>
+#include <unistd.h>
 #include "rddlSDKUtils.h"
 #include "rddlSDKAbst.h"
 #include "unity.h"
+#include "rddl_cid.h"
 
 const char testPoPInfo[]="{\
   \"challenge\": {\
@@ -58,12 +62,56 @@ void testGetPoPInfoFromJson(void){
   TEST_ASSERT_TRUE( !popParticipation.finished );
 }
 
+
+char *rand_string(char *str, size_t size)
+{
+  const char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+  if (size) {
+      --size;
+      for (size_t n = 0; n < size; n++) {
+          int key = rand() % (int) (sizeof charset - 1);
+          str[n] = charset[key];
+      }
+      str[size] = '\0';
+  }
+  return str;
+}
+
+
+void generateTestCIDFiles(int count){
+  char rand_str[20];
+  srand(time(NULL));
+
+  for(int i=0; i<count; ++i){
+    char* cid_str = create_cid_v1_from_string(rand_string(rand_str, 15));
+    char path[128] = "CID_FILES/";
+    strcat(path, cid_str);
+    rddl_writefile( path, (uint8_t*)"TEST_DATA", sizeof("TEST_DATA") );
+    checkNumOfCIDFiles("./CID_FILES/");
+    free(cid_str);
+    usleep(200000);
+  }
+}
+
+
+void tesCheckNumOfCIDFiles(){
+  int test_cnt = 2080;
+
+  generateTestCIDFiles(test_cnt);
+
+  int file_num_e = abstGetNumOfCIDFiles("./CID_FILES/");
+  TEST_ASSERT_EQUAL_INT( file_num_e, MAX_CID_FILE_SIZE - 1 );
+}
+
+
 int main()
 {
     UNITY_BEGIN();
 
     RUN_TEST(testCopyJsonValueString);
     RUN_TEST(testGetPoPInfoFromJson);
+    RUN_TEST(tesCheckNumOfCIDFiles);
 
     return UNITY_END();
 }
