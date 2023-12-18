@@ -194,7 +194,7 @@ char* getGPSstring(){
 }
 
 uint8_t* abstGetStack( size_t size ){
-  return (uint8_t*) malloc( size );
+  return getStack( size );
 }
 void abstClearStack() {}
 

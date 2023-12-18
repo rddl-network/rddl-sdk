@@ -103,9 +103,6 @@ void runRDDLSDKMachineAttestation(const char* machineCategory, const char* manuf
   int status = registerMachine(&anyMsg, machineCategory, manufacturer, cid );
   if ( status >= 0 ){
     status = sendMessages( &anyMsg );
-#ifdef LINUX_MACHINE
-    free( anyMsg.value.data);
-#endif
   }
 }
 
@@ -137,11 +134,6 @@ void runRDDLSDKNotarizationWorkflow(const char* data_str, size_t data_length){
 
   generateAnyCIDAttestMsg(&anyMsg, cid_str, sdk_priv_key_planetmint, sdk_pub_key_planetmint, sdk_address, sdk_ext_pub_key_planetmint );
   sendMessages( &anyMsg );
-
-#ifdef LINUX_MACHINE
-  free(cid_str);
-  free(local_data);
-#endif
 }
 
 bool getPoPFromChain(const char* blockHeight ){
@@ -156,10 +148,6 @@ bool verifyCIDIntegrity( const char* cid, const char* content )
   char* cid_str = create_cid_v1_from_string( content );
   if( cid_str && cid && strcasecmp( cid, cid_str) == 0)
     valid = true;
-
-#ifdef LINUX_MACHINE
-  free( cid_str);
-#endif
 
   return valid;
 }
