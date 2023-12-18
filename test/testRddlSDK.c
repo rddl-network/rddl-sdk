@@ -79,6 +79,35 @@ void testGetPoPFromChain(void){
     TEST_ASSERT_EQUAL_STRING( "", popParticipation.challengee);
 }
 
+typedef struct {
+    char* cid;  // Adjust the size as needed
+    char* content;  // Adjust the size as needed
+    bool integrity;
+} StringBoolPair;
+
+static StringBoolPair myList[3] = {
+    {"bafkreifdn7eov7y6bbmulq7bzdt5bad7oamitbsifdjiogf2o3zdk5sqja", 
+     "{\"Time\":\"2023-12-18T09:03:50\",\"ANALOG\":{\"Temperature1\":9.0},\"ENERGY\":{\"TotalStartTime\":\"2023-10-16T11:51:45\",\"Total\":0.000,\"Yesterday\":0.000,\"Today\":0.000,\"Power\":0,\"ApparentPower\":0,\"ReactivePower\":0,\"Factor\":0.00,\"Voltage\":265,\"Current\":0.000},\"TempUnit\":\"C\"}", 
+      false},
+    {"bafkreig3ougm2x3agi3xsrhe6zxqzorhylmji2s5nxsbha7aoe37vm7o24", 
+     "{\"Time\":\"2023-12-18T09:03:50\",\"ANALOG\":{\"Temperature1\":9.0},\"ENERGY\":{\"TotalStartTime\":\"2023-10-16T11:51:45\",\"Total\":0.000,\"Yesterday\":0.000,\"Today\":0.000,\"Power\":0,\"ApparentPower\":0,\"ReactivePower\":0,\"Factor\":0.00,\"Voltage\":265,\"Current\":0.000},\"TempUnit\":\"C\"}", 
+      true},
+    {"bafkreig3ougm2x3agi3xsrhe6zxqzorhylmji2s5nxsbha7aoe37vm7o24", "this is invalid content", false},
+    {NULL, NULL, false},
+    {NULL, "sdfs", false},
+    {"sdfsdf", NULL, false}
+};
+
+
+void testVerifyCIDIntegrity(void){
+    bool result;
+    for( int i = 0; i < 3; ++i ){
+        result = verifyCIDIntegrity( myList[i].cid, myList[i].content);
+        TEST_ASSERT_TRUE( result == myList[i].integrity );
+    }
+
+}
+
 
 
 int main()
@@ -92,6 +121,7 @@ int main()
     RUN_TEST(testMachineAttestation);
     RUN_TEST(testNotarizationFlow);
     //RUN_TEST(testGetPoPFromChain);
+    RUN_TEST(testVerifyCIDIntegrity);
 
     return UNITY_END();
 }

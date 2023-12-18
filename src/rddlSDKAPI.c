@@ -103,6 +103,9 @@ void runRDDLSDKMachineAttestation(const char* machineCategory, const char* manuf
   int status = registerMachine(&anyMsg, machineCategory, manufacturer, cid );
   if ( status >= 0 ){
     status = sendMessages( &anyMsg );
+#ifdef LINUX_MACHINE
+    free( anyMsg.value.data);
+#endif
   }
 }
 
@@ -118,10 +121,7 @@ void runRDDLSDKNotarizationWorkflow(const char* data_str, size_t data_length){
 
   size_t data_size = data_length;
   uint8_t* local_data = abstGetStack( data_size+2 );
-
   memcpy( local_data, data_str, data_size);
-  char signature[128+1] = {0};
-  signRDDLNetworkMessageContent((const char*)local_data, data_size, signature);
 
   //compute CID
   char* cid_str = create_cid_v1_from_string( (const char*) local_data );
@@ -146,5 +146,21 @@ void runRDDLSDKNotarizationWorkflow(const char* data_str, size_t data_length){
 
 bool getPoPFromChain(const char* blockHeight ){
   return getPoPInfo( blockHeight );
+}
+bool verifyCIDIntegrity( const char* cid, const char* content )
+{
+  bool valid = false;
+  if( !content )
+    return valid;
+
+  char* cid_str = create_cid_v1_from_string( content );
+  if( cid_str && cid && strcasecmp( cid, cid_str) == 0)
+    valid = true;
+
+#ifdef LINUX_MACHINE
+  free( cid_str);
+#endif
+
+  return valid;
 }
 
