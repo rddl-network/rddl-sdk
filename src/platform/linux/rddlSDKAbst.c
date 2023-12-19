@@ -69,7 +69,7 @@ static char curlCmd[256];
 static char curlOutput[1024];
 
 char responseArr[4096];
-
+char challengedCID[ 64 ] = {0};
 PoPInfo popParticipation;
 void resetPopInfo(){  memset( &popParticipation, 0, sizeof(PoPInfo)); }
 

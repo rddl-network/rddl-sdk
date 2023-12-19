@@ -17,6 +17,8 @@ void vAddLogLineTasmota(const char* msg, va_list args);
 int tasmotaSerialPrint(const char* msg);
 char* tasmotaGetSetting(uint32_t index);
 bool tasmotaSetSetting(uint32_t index, const char* replacementText);
+void SubscribeTasmota( const char *topic );
+void PublishPayloadTasmota(const char* topic, const char* payload);
 
 
 

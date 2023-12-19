@@ -16,6 +16,7 @@
   #include "base64.h"
   #include <sys/random.h>
 #else
+  #include "esp_random.h"
   #include "libs/base64_planetmint/src/base64_plntmnt.h"
 #endif
 #include "curves.h"  
@@ -477,7 +478,8 @@ int GetRandomElementFromCIDJSONList(const char* json, char* cidBuffer, size_t bu
 #ifdef LINUX_MACHINE
         getrandom(&randomValue, sizeof(randomValue), 0);
 #else
-        randomValue = (unsigned int) random(ULONG_MAX);
+        esp_fill_random( &randomValue, sizeof(randomValue));
+        randomValue = (unsigned int) random();
 #endif
         randomIndex = randomValue % count;
         extractElement(start, randomIndex, cidBuffer);

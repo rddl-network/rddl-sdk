@@ -47,6 +47,8 @@ char sdk_planetmintapi[100] = {0};
 char sdk_chainid[30] = {0};
 char sdk_denom[20] = {0};
 
+char challengedCID[ 64 ] = {0};
+
 bool sdk_readSeed = false;
 
 static char curlCmd[256];
@@ -143,6 +145,15 @@ bool setSetting(uint32_t index, const char* replacementText){
 uint8_t* abstGetStack( size_t size ){
   return getStack( size );
 }
+
 void abstClearStack() {
   clearStack();
+}
+
+void SubscribeAbst( const char *topic ){
+  SubscribeTasmota( topic );
+}
+
+void PublishPayloadAbst(const char* topic, const char* payload){
+  PublishPayloadTasmota( topic, payload );
 }

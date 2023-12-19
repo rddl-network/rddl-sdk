@@ -104,6 +104,18 @@ void testFromChallengeToContent(void){
 
 }
 
+void testTokenAssumption(void){
+  const char *str = "Split this string by spaces";
+  char buffer[200]= {0};
+  strcpy( buffer, str);
+  char* token = strtok(buffer, " ");
+  TEST_ASSERT_EQUAL_STRING( "Split",  token);
+
+  token = strtok( NULL, " ");
+  TEST_ASSERT_EQUAL_STRING( "this",  token);
+
+}
+
 int main()
 {
     UNITY_BEGIN();
@@ -112,6 +124,7 @@ int main()
     RUN_TEST(testGetPoPInfoFromJson);
     RUN_TEST(testGetRandomElementFromCIDJSONList);
     RUN_TEST(testFromChallengeToContent);
+    RUN_TEST(testTokenAssumption);
 
     return UNITY_END();
 }

@@ -32,9 +32,9 @@ void runRDDLSDKMachineAttestation(const char* machineCategory, const char* manuf
 void runRDDLSDKNotarizationWorkflow(const char* data_str, size_t data_length);
 
 bool getPoPFromChain( const char* blockHeigth );
+bool processPoPChallengeResponse( const char* jsonResponse, size_t length );
 bool verifyCIDIntegrity( const char* cid, const char* content );
-
-
+bool ChallengeChallengee( const char* cid, const char* address );
 
 #ifdef __cplusplus
 }
