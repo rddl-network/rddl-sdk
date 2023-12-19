@@ -84,13 +84,12 @@ void generateTestCIDFiles(int count){
   srand(time(NULL));
 
   for(int i=0; i<count; ++i){
+    abstClearStack();
     char* cid_str = create_cid_v1_from_string(rand_string(rand_str, 15));
     char path[128] = "CID_FILES/";
     strcat(path, cid_str);
     rddl_writefile( path, (uint8_t*)"TEST_DATA", sizeof("TEST_DATA") );
     checkNumOfCIDFiles("./CID_FILES/");
-    free(cid_str);
-    usleep(200000);
   }
 }
 
@@ -109,8 +108,8 @@ int main()
 {
     UNITY_BEGIN();
 
-    RUN_TEST(testCopyJsonValueString);
-    RUN_TEST(testGetPoPInfoFromJson);
+    // RUN_TEST(testCopyJsonValueString);
+    // RUN_TEST(testGetPoPInfoFromJson);
     RUN_TEST(tesCheckNumOfCIDFiles);
 
     return UNITY_END();

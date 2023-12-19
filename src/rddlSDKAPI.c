@@ -6,6 +6,7 @@
 #include <stdint.h> 
 #include <errno.h>
 #include <fcntl.h>
+#include <time.h>
 
 #include "rddl.h"
 #include "rddl_cid.h"
@@ -144,11 +145,6 @@ void runRDDLSDKNotarizationWorkflow(const char* data_str, size_t data_length){
 
   generateAnyCIDAttestMsg(&anyMsg, cid_str, sdk_priv_key_planetmint, sdk_pub_key_planetmint, sdk_address, sdk_ext_pub_key_planetmint );
   sendMessages( &anyMsg );
-
-#ifdef LINUX_MACHINE
-  free(cid_str);
-  free(local_data);
-#endif
 }
 
 bool getPoPFromChain(const char* blockHeight ){
