@@ -108,8 +108,8 @@ int main()
 {
     UNITY_BEGIN();
 
-    // RUN_TEST(testCopyJsonValueString);
-    // RUN_TEST(testGetPoPInfoFromJson);
+    RUN_TEST(testCopyJsonValueString);
+    RUN_TEST(testGetPoPInfoFromJson);
     RUN_TEST(tesCheckNumOfCIDFiles);
 
     return UNITY_END();
