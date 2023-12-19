@@ -20,7 +20,7 @@ bool tasmotaSetSetting(uint32_t index, const char* replacementText);
 int tasmotaGetNumOfCIDFiles(const char *path);
 void tasmotaGetCIDFiles(const char *path);
 void tasmotaSortCIDFiles();
-void tasmotaDeleteOldestCIDFiles();
+int tasmotaDeleteOldestCIDFiles();
 
 #ifdef __cplusplus
 }

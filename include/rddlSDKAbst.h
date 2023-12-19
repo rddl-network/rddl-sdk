@@ -15,7 +15,7 @@ extern "C" {
 
 #define EXT_PUB_KEY_SIZE 112 
 
-#define MAX_CID_FILE_SIZE (24*45)   // One every hour, 45 days in total
+#define MAX_CID_FILE_SIZE (24*40)   // One every hour, 40 days in total
 
 /* MAKE IT GENERIC */
 /* Cozemedim */

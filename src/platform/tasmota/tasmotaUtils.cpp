@@ -18,9 +18,12 @@ extern char* SettingsText(uint32_t index);
 extern void AddLogData(uint32_t loglevel, const char* log_data, const char* log_data_payload = nullptr, const char* log_data_retained = nullptr);
 extern char * ext_vsnprintf_malloc_P(const char * fmt_P, va_list va);
 extern void CmndStatusResponse(uint32_t index);
-extern fs::FS* TfsFileSysHandle();
+extern fs::FS* TfsGlobalFileSysHandle();
+extern fs::FS* TfsFlashFileSysHandle();
+extern fs::FS* TfsDownloadFileSysHandle();
+extern bool TfsDeleteFile(const char *fname);
 
-std::vector<std::pair<std::string, time_t>> cid_files;
+std::vector<std::pair<String, int>> cid_files;
 
 bool hasMachineBeenAttestedTasmota(const char* g_ext_pub_key_planetmint) {
   HTTPClientLight http;
@@ -188,10 +191,23 @@ bool tasmotaSetSetting(uint32_t index, const char* replacementText){
   return SettingsUpdateText( index, replacementText);
 }
 
+FS* tasmotaGetFileSystem(){
+  FS* filesystem = TfsGlobalFileSysHandle();
+  if( filesystem )
+    return filesystem;
+
+  filesystem = TfsFlashFileSysHandle();
+  if( filesystem )
+    return filesystem;
+
+  filesystem = TfsDownloadFileSysHandle();
+  if( filesystem )
+    return filesystem;
+}
 
 /* It is faster to just browse through the names of the files without opening them. */
 int tasmotaGetNumOfCIDFiles(const char *path){
-  FS* filesystem = TfsFileSysHandle();
+  FS* filesystem = tasmotaGetFileSystem();
   if( !filesystem )
     Serial.println("Failed to mount file system");
 
@@ -199,9 +215,8 @@ int tasmotaGetNumOfCIDFiles(const char *path){
   String nextFile = dir.getNextFileName();
 
   int cnt=0;
-  while (count--) {
+  while (nextFile.length() > 0) {
       if( nextFile.length() > 20 ){
-        File currFile = filesystem->open(nextFile.c_str());
         cnt++;
       }
       nextFile = dir.getNextFileName();
@@ -214,35 +229,29 @@ int tasmotaGetNumOfCIDFiles(const char *path){
 
 /* Depending on the number of files, this function may take minutes*/
 void tasmotaGetCIDFiles(const char *path){
-    FS* filesystem = TfsFileSysHandle();
+  FS* filesystem = tasmotaGetFileSystem();
   if( !filesystem )
     Serial.println("Failed to mount file system");
-  
-  File dir = filesystem->open(path);
 
-  while (true) {
-    File currFile = dir.openNextFile();
-    if (!currFile)
-      break;
+  File dir = filesystem->open("/");
+  String nextFile = dir.getNextFileName();
 
-    if( strlen(currFile.name()) > 20 ){
-      auto temp = std::make_pair<std::string, time_t>(std::string{currFile.name()}, currFile.getLastWrite());
-      cid_files.push_back(temp);
-    }
-    
-    currFile.close();
-    currFile = dir.openNextFile();
-
-    /* Since the process takes a long time, give time to other tasks to work.*/
-    delay(20);
+  int cnt=0;
+  while (nextFile.length() > 0) {
+      if( nextFile.length() > 20 ){
+        String time_str = nextFile.substring(nextFile.length() - 10);
+        cid_files.push_back(std::make_pair(nextFile, std::atoi(time_str.c_str())));
+      }
+      nextFile = dir.getNextFileName();
   }
 
   dir.close();
+  return;
 }
 
 
 void tasmotaSortCIDFiles(){
-  std::sort(cid_files.begin(), cid_files.end(), [](const std::pair<std::string, time_t> &a, const std::pair<std::string, time_t> &b){
+  std::sort(cid_files.begin(), cid_files.end(), [](const std::pair<String, int> &a, const std::pair<String, int> &b){
     return a.second > b.second;
   });
 }
@@ -253,7 +262,11 @@ int tasmotaDeleteOldestCIDFiles(){
   if(cid_files.empty())
     return -1;
 
+  if(TfsDeleteFile(cid_files.back().first.c_str()) == false)
+    return -1;
+
   cid_files.pop_back();
+  
   return 0;
 }
 
