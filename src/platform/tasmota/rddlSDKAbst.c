@@ -164,7 +164,11 @@ int abstDeleteOldestCIDFile(const char* path){
   if(num_of_cid_files >= MAX_CID_FILE_SIZE){
     tasmotaGetCIDFiles(path);
     tasmotaSortCIDFiles();
+    if(tasmotaDeleteOldestCIDFiles() != -1)
+      return 0;
   }
+
+  
 
   return -1;
 }
