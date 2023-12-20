@@ -418,7 +418,6 @@ int abstDeleteOldestCIDFile(const char* path){
             return 0;
         }
     } else {
-        printf("No file found with a name longer than 20 characters.\n");
         return -1;
     }
   } else {

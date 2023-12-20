@@ -90,8 +90,14 @@ void generateTestCIDFiles(int count){
     char* cid_str = create_cid_v1_from_string(rand_string(rand_str, 15));
     char path[128] = "CID_FILES/";
     strcat(path, cid_str);
-    rddl_writefile( path, (uint8_t*)"TEST_DATA", sizeof("TEST_DATA") );
+
+    char cid_name[256] = {0};
+    long curr_time;
+    time(&curr_time);
+    sprintf(cid_name, "%s%ld",path, curr_time);
+    rddl_writefile( cid_name, (uint8_t*)"TEST_DATA", sizeof("TEST_DATA") );
     checkNumOfCIDFiles("./CID_FILES/");
+    usleep(10000);
   }
 }
 
