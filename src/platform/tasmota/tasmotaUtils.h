@@ -21,6 +21,10 @@ int tasmotaGetNumOfCIDFiles(const char *path);
 void tasmotaGetCIDFiles(const char *path);
 void tasmotaSortCIDFiles();
 int tasmotaDeleteOldestCIDFiles();
+void SubscribeTasmota( const char *topic );
+void PublishPayloadTasmota(const char* topic, const char* payload);
+
+
 
 #ifdef __cplusplus
 }

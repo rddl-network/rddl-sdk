@@ -119,10 +119,7 @@ void runRDDLSDKNotarizationWorkflow(const char* data_str, size_t data_length){
 
   size_t data_size = data_length;
   uint8_t* local_data = abstGetStack( data_size+2 );
-
   memcpy( local_data, data_str, data_size);
-  char signature[128+1] = {0};
-  signRDDLNetworkMessageContent((const char*)local_data, data_size, signature);
 
   //compute CID
   char* cid_str = create_cid_v1_from_string( (const char*) local_data );
@@ -150,4 +147,78 @@ void runRDDLSDKNotarizationWorkflow(const char* data_str, size_t data_length){
 bool getPoPFromChain(const char* blockHeight ){
   return getPoPInfo( blockHeight );
 }
+bool verifyCIDIntegrity( const char* cid, const char* content )
+{
+  bool valid = false;
+  if( !content )
+    return valid;
 
+  char* cid_str = create_cid_v1_from_string( content );
+  if( cid_str && cid && strcasecmp( cid, cid_str) == 0)
+    valid = true;
+
+  return valid;
+}
+
+bool processPoPChallengeResponse( const char* jsonResponse, size_t length){
+    sdkClearStack();
+    uint8_t* dataBuffer = sdkGetStack( length );
+    uint8_t* cidBuffer = sdkGetStack( 64 );
+    uint8_t encoding[10] = {0};
+    int failed = copyJsonValueString( dataBuffer, length, jsonResponse, "data");
+    if( failed ) {
+      AddLogLineAbst( "RET: could not extract data");
+      return false;
+    }
+    failed = copyJsonValueString( encoding, 10, jsonResponse, "encoding");
+    if( failed ) {
+      AddLogLineAbst( "RET: could not extract encoding");
+      return false;
+    }
+    failed = copyJsonValueString( cidBuffer, 64, jsonResponse, "cid");
+    if( failed ) {
+      AddLogLineAbst( "RET: could not extract CID");
+      return false;
+    }
+    if (strcmp( "hex", encoding) != 0 ){
+      AddLogLineAbst( "RET: unsupported encoding %s", encoding);
+      return false;
+    }
+    if( strcmp( challengedCID, cidBuffer ) != 0 ){
+      AddLogLineAbst( "RET: wrong CID - exp: %s deliviered: %s ", challengedCID, cidBuffer);
+      return false;
+    }
+    const uint8_t* contentBytes = fromHexString(dataBuffer);
+    AddLogLineAbst( "RET: %s", jsonResponse);
+    bool result = verifyCIDIntegrity( cidBuffer, contentBytes);
+    if( !result ){
+      AddLogLineAbst( "RET: CID verification failed: %s - %s ", cidBuffer, contentBytes);
+      return false;
+    }
+    AddLogLineAbst( "RET: PoP successfully passed");
+    return true;
+}
+
+#ifndef LINUX_MACHINE
+extern void MqttSubscribe(const char *topic);
+extern void MqttPublishPayload(const char* topic, const char* payload);
+
+
+bool ChallengeChallengee( const char* cid, const char* address ){
+  
+  char subscriptionTopic[200] = {0};
+  char publishingTopic[200] = {0};
+  sprintf( subscriptionTopic, "stat/%s/POPCHALLENGERESULT", address);//popParticipation.challengee);
+  SubscribeAbst(subscriptionTopic);
+
+  
+  //get cid for challengee address
+  strcpy(challengedCID, cid);
+
+  //const char* cid = ;
+  sprintf( publishingTopic, "cmnd/%s/PoPChallenge", address);//popParticipation.challengee);
+  PublishPayloadAbst(publishingTopic, challengedCID);
+  return true;
+
+}
+#endif

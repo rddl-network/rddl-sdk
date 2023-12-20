@@ -74,6 +74,7 @@ static char curlOutput[1024];
 char responseArr[4096];
 uint32_t num_of_cid_files = 0;
 
+char challengedCID[ 64 ] = {0};
 PoPInfo popParticipation;
 void resetPopInfo(){  memset( &popParticipation, 0, sizeof(PoPInfo)); }
 
@@ -200,9 +201,12 @@ char* getGPSstring(){
 uint8_t* abstGetStack( size_t size ){
   return getStack( size );
 }
+
+
 void abstClearStack() {
   clearStack();
 }
+
 
 bool getAccountInfo( uint64_t* account_id, uint64_t* sequence )
 {

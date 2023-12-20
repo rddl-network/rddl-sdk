@@ -47,6 +47,8 @@ char sdk_planetmintapi[100] = {0};
 char sdk_chainid[30] = {0};
 char sdk_denom[20] = {0};
 
+char challengedCID[ 64 ] = {0};
+
 bool sdk_readSeed = false;
 
 static char curlCmd[256];
@@ -167,8 +169,14 @@ int abstDeleteOldestCIDFile(const char* path){
     if(tasmotaDeleteOldestCIDFiles() != -1)
       return 0;
   }
-
-  
-
   return -1;
+}
+
+
+void SubscribeAbst( const char *topic ){
+  SubscribeTasmota( topic );
+}
+
+void PublishPayloadAbst(const char* topic, const char* payload){
+  PublishPayloadTasmota( topic, payload );
 }

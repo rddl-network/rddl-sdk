@@ -24,6 +24,9 @@ extern fs::FS* TfsDownloadFileSysHandle();
 extern bool TfsDeleteFile(const char *fname);
 
 std::vector<std::pair<String, int>> cid_files;
+extern void MqttSubscribe(const char *topic);
+extern void MqttPublishPayload(const char* topic, const char* payload);
+
 
 bool hasMachineBeenAttestedTasmota(const char* g_ext_pub_key_planetmint) {
   HTTPClientLight http;
@@ -191,30 +194,19 @@ bool tasmotaSetSetting(uint32_t index, const char* replacementText){
   return SettingsUpdateText( index, replacementText);
 }
 
-FS* tasmotaGetFileSystem(){
-  FS* filesystem = TfsGlobalFileSysHandle();
-  if( filesystem )
-    return filesystem;
-
-  filesystem = TfsFlashFileSysHandle();
-  if( filesystem )
-    return filesystem;
-
-  filesystem = TfsDownloadFileSysHandle();
-  if( filesystem )
-    return filesystem;
-}
 
 /* It is faster to just browse through the names of the files without opening them. */
 int tasmotaGetNumOfCIDFiles(const char *path){
-  FS* filesystem = tasmotaGetFileSystem();
-  if( !filesystem )
+  int cnt=0;
+  FS* filesystem = TfsFlashFileSysHandle();
+  if( !filesystem ){
     Serial.println("Failed to mount file system");
+    return cnt;
+  }
 
   File dir = filesystem->open(path);
   String nextFile = dir.getNextFileName();
 
-  int cnt=0;
   while (nextFile.length() > 0) {
       if( nextFile.length() > 20 ){
         cnt++;
@@ -229,9 +221,11 @@ int tasmotaGetNumOfCIDFiles(const char *path){
 
 /* Depending on the number of files, this function may take minutes*/
 void tasmotaGetCIDFiles(const char *path){
-  FS* filesystem = tasmotaGetFileSystem();
-  if( !filesystem )
+  FS* filesystem = TfsFlashFileSysHandle();
+  if( !filesystem ){
     Serial.println("Failed to mount file system");
+    return;
+  }
 
   File dir = filesystem->open("/");
   String nextFile = dir.getNextFileName();
@@ -271,16 +265,13 @@ int tasmotaDeleteOldestCIDFiles(){
 }
 
 
+void SubscribeTasmota( const char *topic ){
+  MqttSubscribe( topic );
+}
 
 
-
-
-
-
-
-
-
-
-
+void PublishPayloadTasmota(const char* topic, const char* payload){
+  MqttPublishPayload( topic, payload );
+}
 
 
