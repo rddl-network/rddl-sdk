@@ -15,7 +15,8 @@ extern bool SettingsUpdateText(uint32_t index, const char* replace_me);
 extern char* SettingsText(uint32_t index);
 extern void AddLogData(uint32_t loglevel, const char* log_data, const char* log_data_payload = nullptr, const char* log_data_retained = nullptr);
 extern char * ext_vsnprintf_malloc_P(const char * fmt_P, va_list va);
-
+extern void MqttSubscribe(const char *topic);
+extern void MqttPublishPayload(const char* topic, const char* payload);
 
 
 bool hasMachineBeenAttestedTasmota(const char* g_ext_pub_key_planetmint) {
@@ -183,3 +184,15 @@ char* tasmotaGetSetting(uint32_t index){
 bool tasmotaSetSetting(uint32_t index, const char* replacementText){
   return SettingsUpdateText( index, replacementText);
 }
+
+
+void SubscribeTasmota( const char *topic ){
+  MqttSubscribe( topic );
+}
+
+
+void PublishPayloadTasmota(const char* topic, const char* payload){
+  MqttPublishPayload( topic, payload );
+}
+
+

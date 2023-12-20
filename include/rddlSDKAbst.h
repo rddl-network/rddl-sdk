@@ -40,6 +40,7 @@ extern char sdk_denom[20];
 
 extern bool sdk_readSeed;
 extern char responseArr[4096];
+extern char challengedCID[ 64 ];
 
 typedef struct PoPInfo {
     int64_t blockHeight;
@@ -49,6 +50,7 @@ typedef struct PoPInfo {
 } PoPInfo;
 
 extern PoPInfo popParticipation;
+
 
 void resetPopInfo();
 bool hasMachineBeenAttested();
@@ -66,6 +68,11 @@ bool setSetting(uint32_t index, const char* replacementText);
 
 uint8_t* abstGetStack( size_t size );
 void abstClearStack();
+
+void SubscribeAbst( const char *topic );
+void PublishPayloadAbst(const char* topic, const char* payload);
+
+
 #ifdef __cplusplus
 }
 #endif

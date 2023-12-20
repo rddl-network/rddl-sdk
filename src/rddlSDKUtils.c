@@ -6,13 +6,17 @@
 #include <stdint.h> 
 #include <errno.h>
 #include <fcntl.h>
+#include <stdlib.h>
 
 #include "rddl.h"
 #include "rddl_cid.h"
 #include "bip32.h"
+
 #ifdef LINUX_MACHINE
   #include "base64.h"
+  #include <sys/random.h>
 #else
+  #include "esp_random.h"
   #include "libs/base64_planetmint/src/base64_plntmnt.h"
 #endif
 #include "curves.h"  
@@ -297,10 +301,6 @@ int registerMachine(void* anyMsg, const char* machineCategory, const char* manuf
   machineMsg.machine = &machine;
   int ret = generateAnyAttestMachineMsg((Google__Protobuf__Any*)anyMsg, &machineMsg);
 
-#ifdef LINUX_MACHINE
-  free(deviceDescription);
-#endif
-
   if( ret<0 )
   {
     sprintf(responseArr, "No Attestation message\n");
@@ -321,10 +321,6 @@ int sendMessages( void* pAnyMsg) {
   sprintf(responseArr, "TX broadcast:\n");
   AddLogLineAbst(responseArr);
   int broadcast_return = broadcast_transaction( tx_payload );
-
-#ifdef LINUX_MACHINE
-  free(tx_payload);
-#endif
 
   return broadcast_return;
 }
@@ -441,4 +437,57 @@ bool getPoPInfoFromJSON( const char* json){
   }
   
   return true;
+}
+
+
+// Function to count the number of elements in the "cids" array
+int countElements(const char* start, const char* end) {
+    int count = 0;
+    const char* temp = start;
+    while (temp < end && (temp = strstr(temp, "\"b"))) {
+        count++;
+        temp++;
+    }
+    return count;
+}
+
+// Function to extract the nth element from the "cids" array
+void extractElement(const char* start, int index, char* result) {
+    const char* temp = start;
+    for (int i = 0; i <= index; ++i) {
+        temp = strstr(temp, "\"b");
+        temp++;
+    }
+    // Assuming each element is not longer than 100 characters
+    strncpy(result, temp, 100);
+    char* endOfElement = strchr(result, '\"');
+    if (endOfElement) {
+        *endOfElement = '\0';
+    }
+}
+
+int GetRandomElementFromCIDJSONList(const char* json, char* cidBuffer, size_t bufferSize ) {    
+    // Find the start and end of the "cids" array
+    const char* start = strstr(json, "[");
+    const char* end = strstr(json, "]");
+       
+    if (start && end) {
+        int count = countElements(start, end);
+        unsigned int randomValue;
+        int randomIndex;
+#ifdef LINUX_MACHINE
+        getrandom(&randomValue, sizeof(randomValue), 0);
+#else
+        esp_fill_random( &randomValue, sizeof(randomValue));
+        randomValue = (unsigned int) random();
+#endif
+        randomIndex = randomValue % count;
+        extractElement(start, randomIndex, cidBuffer);
+
+        printf("Random Element: %u %s\n",randomIndex, cidBuffer);
+        return randomIndex;
+    } else {
+        printf("Error parsing JSON string.\n");
+    }
+    return -1;
 }
