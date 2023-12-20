@@ -227,7 +227,7 @@ void tasmotaGetCIDFiles(const char *path){
     return;
   }
 
-  File dir = filesystem->open("/");
+  File dir = filesystem->open(path);
   String nextFile = dir.getNextFileName();
 
   int cnt=0;
