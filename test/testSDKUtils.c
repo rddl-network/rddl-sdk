@@ -2,11 +2,15 @@
 #include "stdio.h"
 #include "stdint.h"
 #include <stdbool.h> 
+#include <stdlib.h>
 #include <string.h>
+#include <time.h>
+#include <unistd.h>
 #include "rddlSDKUtils.h"
 #include "rddlSDKAbst.h"
 #include "rddl.h"
 #include "unity.h"
+#include "rddl_cid.h"
 
 
 const char testPoPInfo[]="{\
@@ -58,6 +62,53 @@ void testGetPoPInfoFromJson(void){
   TEST_ASSERT_EQUAL_STRING( "plmnt1w2aatad7ecm05a3yx2s2k0zjttkcp6hr08enpl", popParticipation.challenger );
   TEST_ASSERT_EQUAL_STRING( "plmnt14jsrvk25p9vgq2d9unmvgmqd80qvywu84tl0vf", popParticipation.challengee );
   TEST_ASSERT_TRUE( !popParticipation.finished );
+}
+
+
+char *rand_string(char *str, size_t size)
+{
+  const char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+  if (size) {
+      --size;
+      for (size_t n = 0; n < size; n++) {
+          int key = rand() % (int) (sizeof charset - 1);
+          str[n] = charset[key];
+      }
+      str[size] = '\0';
+  }
+  return str;
+}
+
+
+void generateTestCIDFiles(int count){
+  char rand_str[20];
+  srand(time(NULL));
+
+  for(int i=0; i<count; ++i){
+    abstClearStack();
+    char* cid_str = create_cid_v1_from_string(rand_string(rand_str, 15));
+    char path[128] = "CID_FILES/";
+    strcat(path, cid_str);
+
+    char cid_name[256] = {0};
+    long curr_time;
+    time(&curr_time);
+    sprintf(cid_name, "%s%ld",path, curr_time);
+    rddl_writefile( cid_name, (uint8_t*)"TEST_DATA", sizeof("TEST_DATA") );
+    checkNumOfCIDFiles("./CID_FILES/");
+    usleep(10000);
+  }
+}
+
+
+void tesCheckNumOfCIDFiles(){
+  int test_cnt = 2080;
+
+  generateTestCIDFiles(test_cnt);
+
+  int file_num_e = abstGetNumOfCIDFiles("./CID_FILES/");
+  TEST_ASSERT_EQUAL_INT( file_num_e, MAX_CID_FILE_SIZE - 1 );
 }
 
 const char* jsonCIDList = "{\"cids\": [\"bafkreig3ougm2x3agi3xsrhe6zxqzorhylmji2s5nxsbha7aoe37vm7o24\", \
@@ -122,6 +173,7 @@ int main()
 
     RUN_TEST(testCopyJsonValueString);
     RUN_TEST(testGetPoPInfoFromJson);
+    RUN_TEST(tesCheckNumOfCIDFiles);
     RUN_TEST(testGetRandomElementFromCIDJSONList);
     RUN_TEST(testFromChallengeToContent);
     RUN_TEST(testTokenAssumption);

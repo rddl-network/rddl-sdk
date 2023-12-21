@@ -440,6 +440,17 @@ bool getPoPInfoFromJSON( const char* json){
 }
 
 
+void checkNumOfCIDFiles(const char* path){
+  if(num_of_cid_files == 0)
+    num_of_cid_files = abstGetNumOfCIDFiles(path);
+  else
+    num_of_cid_files++;
+  
+  if(abstDeleteOldestCIDFile(path) == 0)
+    num_of_cid_files--;
+}
+
+
 // Function to count the number of elements in the "cids" array
 int countElements(const char* start, const char* end) {
     int count = 0;

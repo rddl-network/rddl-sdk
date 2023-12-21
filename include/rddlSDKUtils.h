@@ -15,6 +15,7 @@ int copyJsonValueString(char *buffer, size_t buffer_len, const char *json, const
 int parseJsonBoolean(const char *json, const char *key, bool *result);
 bool getPoPInfoFromJSON( const char* json);
 bool convertStringToInt64( const char* valueString, int64_t* targetValue );
+void checkNumOfCIDFiles(const char* path);
 int GetRandomElementFromCIDJSONList(const char* json, char* cidBuffer, size_t bufferSize) ;
 
 #ifdef __cplusplus

@@ -17,6 +17,10 @@ void vAddLogLineTasmota(const char* msg, va_list args);
 int tasmotaSerialPrint(const char* msg);
 char* tasmotaGetSetting(uint32_t index);
 bool tasmotaSetSetting(uint32_t index, const char* replacementText);
+int tasmotaGetNumOfCIDFiles(const char *path);
+void tasmotaGetCIDFiles(const char *path);
+void tasmotaSortCIDFiles();
+int tasmotaDeleteOldestCIDFiles();
 void SubscribeTasmota( const char *topic );
 void PublishPayloadTasmota(const char* topic, const char* payload);
 
