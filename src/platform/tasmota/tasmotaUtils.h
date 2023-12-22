@@ -19,6 +19,7 @@ char* tasmotaGetSetting(uint32_t index);
 bool tasmotaSetSetting(uint32_t index, const char* replacementText);
 void SubscribeTasmota( const char *topic );
 void PublishPayloadTasmota(const char* topic, const char* payload);
+char* getCIDsTasmota( const char* address );
 
 
 

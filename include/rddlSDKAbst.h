@@ -71,6 +71,7 @@ void abstClearStack();
 
 void SubscribeAbst( const char *topic );
 void PublishPayloadAbst(const char* topic, const char* payload);
+char* getCIDtoBeChallenged();
 
 
 #ifdef __cplusplus

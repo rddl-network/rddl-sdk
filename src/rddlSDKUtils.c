@@ -450,20 +450,22 @@ int countElements(const char* start, const char* end) {
     }
     return count;
 }
-
+#define MIN(x, y) (((x) < (y)) ? (x) : (y))
 // Function to extract the nth element from the "cids" array
-void extractElement(const char* start, int index, char* result) {
+void extractElement(const char* start, int index, char* result, size_t resultBufferSize) {
     const char* temp = start;
     for (int i = 0; i <= index; ++i) {
         temp = strstr(temp, "\"b");
         temp++;
     }
     // Assuming each element is not longer than 100 characters
-    strncpy(result, temp, 100);
+    strncpy(result, temp, MIN( resultBufferSize, strlen(temp)) );
     char* endOfElement = strchr(result, '\"');
-    if (endOfElement) {
-        *endOfElement = '\0';
-    }
+    if (endOfElement) 
+      *endOfElement = '\0';
+    else
+      result[resultBufferSize-1] = '\0';
+
 }
 
 int GetRandomElementFromCIDJSONList(const char* json, char* cidBuffer, size_t bufferSize ) {    
@@ -482,7 +484,7 @@ int GetRandomElementFromCIDJSONList(const char* json, char* cidBuffer, size_t bu
         randomValue = (unsigned int) random();
 #endif
         randomIndex = randomValue % count;
-        extractElement(start, randomIndex, cidBuffer);
+        extractElement(start, randomIndex, cidBuffer, bufferSize);
 
         printf("Random Element: %u %s\n",randomIndex, cidBuffer);
         return randomIndex;
