@@ -56,6 +56,8 @@ static char curlOutput[1024];
 
 char responseArr[4096];
 
+uint32_t num_of_cid_files = 0;
+
 
 PoPInfo popParticipation;
 void resetPopInfo(){  memset( &popParticipation, 0, sizeof(PoPInfo)); }
@@ -146,9 +148,30 @@ uint8_t* abstGetStack( size_t size ){
   return getStack( size );
 }
 
+
 void abstClearStack() {
   clearStack();
 }
+
+
+int abstGetNumOfCIDFiles(const char* path){
+  return tasmotaGetNumOfCIDFiles(path);
+}
+
+
+int abstDeleteOldestCIDFile(const char* path){
+  if(tasmotaDeleteOldestCIDFiles() != -1)
+    return 0;
+
+  if(num_of_cid_files >= MAX_CID_FILE_SIZE){
+    tasmotaGetCIDFiles(path);
+    tasmotaSortCIDFiles();
+    if(tasmotaDeleteOldestCIDFiles() != -1)
+      return 0;
+  }
+  return -1;
+}
+
 
 void SubscribeAbst( const char *topic ){
   SubscribeTasmota( topic );

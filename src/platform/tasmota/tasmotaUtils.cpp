@@ -6,6 +6,8 @@
 #include "HttpClientLight.h"
 #include "rddlSDKSettings.h"
 #include "rddlSDKUtils.h"
+#include <LittleFS.h>
+#include <vector>
 
 
 extern bool TfsSaveFile(const char *fname, const uint8_t *buf, uint32_t len);
@@ -15,6 +17,13 @@ extern bool SettingsUpdateText(uint32_t index, const char* replace_me);
 extern char* SettingsText(uint32_t index);
 extern void AddLogData(uint32_t loglevel, const char* log_data, const char* log_data_payload = nullptr, const char* log_data_retained = nullptr);
 extern char * ext_vsnprintf_malloc_P(const char * fmt_P, va_list va);
+extern void CmndStatusResponse(uint32_t index);
+extern fs::FS* TfsGlobalFileSysHandle();
+extern fs::FS* TfsFlashFileSysHandle();
+extern fs::FS* TfsDownloadFileSysHandle();
+extern bool TfsDeleteFile(const char *fname);
+
+std::vector<std::pair<String, int>> cid_files;
 extern void MqttSubscribe(const char *topic);
 extern void MqttPublishPayload(const char* topic, const char* payload);
 
@@ -183,6 +192,76 @@ char* tasmotaGetSetting(uint32_t index){
 
 bool tasmotaSetSetting(uint32_t index, const char* replacementText){
   return SettingsUpdateText( index, replacementText);
+}
+
+
+/* It is faster to just browse through the names of the files without opening them. */
+int tasmotaGetNumOfCIDFiles(const char *path){
+  int cnt=0;
+  FS* filesystem = TfsFlashFileSysHandle();
+  if( !filesystem ){
+    Serial.println("Failed to mount file system");
+    return cnt;
+  }
+
+  File dir = filesystem->open(path);
+  String nextFile = dir.getNextFileName();
+
+  while (nextFile.length() > 0) {
+      if( nextFile.length() > 20 ){
+        cnt++;
+      }
+      nextFile = dir.getNextFileName();
+  }
+
+  dir.close();
+  return cnt;
+}
+
+
+/* Depending on the number of files, this function may take minutes*/
+void tasmotaGetCIDFiles(const char *path){
+  FS* filesystem = TfsFlashFileSysHandle();
+  if( !filesystem ){
+    Serial.println("Failed to mount file system");
+    return;
+  }
+
+  File dir = filesystem->open(path);
+  String nextFile = dir.getNextFileName();
+
+  int cnt=0;
+  while (nextFile.length() > 0) {
+      if( nextFile.length() > 20 ){
+        String time_str = nextFile.substring(nextFile.length() - 10);
+        cid_files.push_back(std::make_pair(nextFile, std::atoi(time_str.c_str())));
+      }
+      nextFile = dir.getNextFileName();
+  }
+
+  dir.close();
+  return;
+}
+
+
+void tasmotaSortCIDFiles(){
+  std::sort(cid_files.begin(), cid_files.end(), [](const std::pair<String, int> &a, const std::pair<String, int> &b){
+    return a.second > b.second;
+  });
+}
+
+
+/* Delete last element on cid files vector, Return -1 if vector is empty */
+int tasmotaDeleteOldestCIDFiles(){
+  if(cid_files.empty())
+    return -1;
+
+  if(TfsDeleteFile(cid_files.back().first.c_str()) == false)
+    return -1;
+
+  cid_files.pop_back();
+  
+  return 0;
 }
 
 
