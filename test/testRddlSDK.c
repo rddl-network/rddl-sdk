@@ -85,7 +85,7 @@ typedef struct {
     bool integrity;
 } StringBoolPair;
 
-static StringBoolPair myList[3] = {
+static StringBoolPair myList[6] = {
     {"bafkreifdn7eov7y6bbmulq7bzdt5bad7oamitbsifdjiogf2o3zdk5sqja", 
      "{\"Time\":\"2023-12-18T09:03:50\",\"ANALOG\":{\"Temperature1\":9.0},\"ENERGY\":{\"TotalStartTime\":\"2023-10-16T11:51:45\",\"Total\":0.000,\"Yesterday\":0.000,\"Today\":0.000,\"Power\":0,\"ApparentPower\":0,\"ReactivePower\":0,\"Factor\":0.00,\"Voltage\":265,\"Current\":0.000},\"TempUnit\":\"C\"}", 
       false},
@@ -108,7 +108,22 @@ void testVerifyCIDIntegrity(void){
 
 }
 
+void testAmIChallanger(void){
+    sdkGetPlntmntKeys();
+    strcpy( popParticipation.challenger, sdkGetRDDLAddress() );
+    TEST_ASSERT_TRUE( amIChallenger() );
 
+    sdkGetPlntmntKeys();
+    popParticipation.challenger[0] ='n';
+    TEST_ASSERT_FALSE( amIChallenger() );
+}
+void testGetCIDtoBeChallenged(void){
+    strcpy(popParticipation.challengee, "plmnt15gdanx0nm2lwsx30a6wft7429p32dhzaq37c06");
+    const char* cid = (const char*) getCIDtoBeChallenged();
+    TEST_ASSERT_NOT_NULL( cid );
+    int32_t size = (int32_t)strlen( cid );
+    TEST_ASSERT_EQUAL_INT32( 60, size);
+}
 
 int main()
 {
@@ -120,8 +135,10 @@ int main()
     RUN_TEST(testGetPublicKeys);
     RUN_TEST(testMachineAttestation);
     RUN_TEST(testNotarizationFlow);
-    //RUN_TEST(testGetPoPFromChain);
+    //RUN_TEST(testGetPoPFromChain);            //skipped due to service dependency
     RUN_TEST(testVerifyCIDIntegrity);
+    RUN_TEST(testAmIChallanger);
+    //RUN_TEST(testGetCIDtoBeChallenged);       //skipped due to service dependency
 
     return UNITY_END();
 }

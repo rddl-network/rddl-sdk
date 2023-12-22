@@ -35,6 +35,8 @@ bool getPoPFromChain( const char* blockHeigth );
 bool processPoPChallengeResponse( const char* jsonResponse, size_t length );
 bool verifyCIDIntegrity( const char* cid, const char* content );
 bool ChallengeChallengee( const char* cid, const char* address );
+bool amIChallenger();
+char* getCIDofChallengee();
 
 #ifdef __cplusplus
 }

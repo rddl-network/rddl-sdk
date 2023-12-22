@@ -274,4 +274,21 @@ void PublishPayloadTasmota(const char* topic, const char* payload){
   MqttPublishPayload( topic, payload );
 }
 
+char* getCIDsTasmota( const char* address ){
+  char uri[300] = {0};
+  HTTPClientLight http;
+  const char* cmd = "planetmint/asset/get_cids_by_address";
+  sprintf( uri, "%s/%s/%s/%s", tasmotaGetSetting( SDK_SET_PLANETMINT_API), cmd, address, "2000");
 
+  http.begin(uri);
+  http.addHeader("Content-Type", "application/json");
+
+  int httpResponseCode = http.GET();
+  if (httpResponseCode != 200)
+    return NULL;
+
+  uint8_t* buffer = getStack( http.getSize() );
+  memcpy( buffer, http.getString().c_str(), http.getSize() );
+
+  return (char*)buffer;
+}
