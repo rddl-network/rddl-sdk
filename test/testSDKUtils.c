@@ -27,8 +27,13 @@ const char testPoPInfoMalformed[]="{\"challenge\": \"testlkj}";
 void testCopyJsonValueString(void){
   char challenger[60] = {0};
   char challengee[60] = {0};
+  char initiator[60] = {0};
 
-  int result = copyJsonValueString( challenger, 60, testPoPInfo, "challenger");
+  int result = copyJsonValueString( initiator, 60, testPoPInfo, "initiator");
+  TEST_ASSERT_EQUAL_INT32( 0, result);
+  TEST_ASSERT_EQUAL_STRING("6a1afc01df7d2b778cb094de94a5f14d5bb8d970", initiator);
+
+  result = copyJsonValueString( challenger, 60, testPoPInfo, "challenger");
   TEST_ASSERT_EQUAL_INT32( 0, result);
   TEST_ASSERT_EQUAL_STRING("plmnt1w2aatad7ecm05a3yx2s2k0zjttkcp6hr08enpl", challenger);
 
@@ -56,6 +61,7 @@ void testGetPoPInfoFromJson(void){
   bool result = getPoPInfoFromJSON( testPoPInfo );
   TEST_ASSERT_TRUE( result );
   TEST_ASSERT_EQUAL_INT64( 3, popParticipation.blockHeight );
+  TEST_ASSERT_EQUAL_STRING( "6a1afc01df7d2b778cb094de94a5f14d5bb8d970", popParticipation.initiator );
   TEST_ASSERT_EQUAL_STRING( "plmnt1w2aatad7ecm05a3yx2s2k0zjttkcp6hr08enpl", popParticipation.challenger );
   TEST_ASSERT_EQUAL_STRING( "plmnt14jsrvk25p9vgq2d9unmvgmqd80qvywu84tl0vf", popParticipation.challengee );
   TEST_ASSERT_TRUE( !popParticipation.finished );
@@ -135,6 +141,7 @@ void testCreatePopResult(void){
   abstClearStack();
   resetPopInfo();
   bool result = getPoPInfoFromJSON( testPoPInfo );
+  TEST_ASSERT_TRUE( result );
   bool dataIntegrity = true;
   int32_t res = CreatePoPResult( &anyMsg, dataIntegrity);
   TEST_ASSERT_EQUAL_INT32( 0, res );

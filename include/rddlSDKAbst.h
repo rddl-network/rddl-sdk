@@ -44,6 +44,7 @@ extern char challengedCID[ 64 ];
 
 typedef struct PoPInfo {
     int64_t blockHeight;
+    char initiator[64];
     char challenger[64];
     char challengee[64];
     bool finished;

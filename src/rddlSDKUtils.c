@@ -191,6 +191,7 @@ void signRDDLNetworkMessageContent( const char* data_str, size_t data_length, ch
 int CreatePoPResult( void* anyMsg, bool PoPSuccess ){
 
   Planetmintgo__Dao__Challenge challenge = PLANETMINTGO__DAO__CHALLENGE__INIT;
+  challenge.initiator = popParticipation.initiator;
   challenge.challenger = popParticipation.challenger;
   challenge.challengee = popParticipation.challengee;
   challenge.height = popParticipation.blockHeight;
@@ -365,8 +366,10 @@ bool convertStringToInt64( const char* valueString, int64_t* targetValue ){
 bool getPoPInfoFromJSON( const char* json){
   AddLogLineAbst( "PoPInfo: %s", json );
   resetPopInfo();
-  int result = copyJsonValueString( popParticipation.challengee, sizeof(popParticipation.challengee), json, "challengee");
+
+  int result = copyJsonValueString( popParticipation.initiator, sizeof(popParticipation.initiator), json, "initiator");
   if( result ){
+    resetPopInfo();
     return false;
   }
   result = copyJsonValueString( popParticipation.challenger, sizeof(popParticipation.challenger), json, "challenger");
@@ -374,6 +377,12 @@ bool getPoPInfoFromJSON( const char* json){
     resetPopInfo();
     return false;
   }
+  result = copyJsonValueString( popParticipation.challengee, sizeof(popParticipation.challengee), json, "challengee");
+  if( result ){
+    resetPopInfo();
+    return false;
+  }
+
 
   char blockHeight[30] = {0};
   result = copyJsonValueString( blockHeight, sizeof(blockHeight), json, "height");
