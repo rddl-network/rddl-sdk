@@ -23,12 +23,15 @@
 #include "secp256k1.h"
 
 #include "rddl_types.h"
+#include "cosmos/tx/v1beta1/tx.pb-c.h"
 #include "planetmintgo.h"
 #include "planetmintgo/machine/machine.pb-c.h"
-#include "cosmos/tx/v1beta1/tx.pb-c.h"
 #include "planetmintgo/machine/tx.pb-c.h"
 #include "planetmintgo/asset/tx.pb-c.h"
+#include "planetmintgo/dao/tx.pb-c.h"
+#include "planetmintgo/dao/challenge.pb-c.h"
 #include "google/protobuf/any.pb-c.h"
+
 
 #include "configFile.h"
 #include "rddlSDKAbst.h"
@@ -184,68 +187,22 @@ void signRDDLNetworkMessageContent( const char* data_str, size_t data_length, ch
   AddLogLineAbst(responseArr);
 }
 
- 
-// int registerMachine(void* anyMsg){
-  
-//   char machinecid_buffer[58+1] = {0};
 
-//   uint8_t signature[64]={0};
-//   char signature_hex[64*2+1]={0};
-//   uint8_t hash[32];
+int CreatePoPResult( void* anyMsg, bool PoPSuccess ){
 
-//   bool ret_bool = getMachineIDSignature(  private_key_machine_id,  sdk_machineid_public_key, signature, hash);
-//   if( ! ret_bool )
-//   {
-//     sprintf(responseArr, "No machine signature\n");
-//     AddLogLineAbst(responseArr);
-//     return -1;
-//   }
-  
-//   toHexString( signature_hex, signature, 64*2);
+  Planetmintgo__Dao__Challenge challenge = PLANETMINTGO__DAO__CHALLENGE__INIT;
+  challenge.challenger = popParticipation.challenger;
+  challenge.challengee = popParticipation.challengee;
+  challenge.height = popParticipation.blockHeight;
+  challenge.success = PoPSuccess;
+  challenge.finished = true;
+  Planetmintgo__Dao__MsgReportPopResult popResultMsg = PLANETMINTGO__DAO__MSG_REPORT_POP_RESULT__INIT;
+  popResultMsg.creator = sdk_address;
+  popResultMsg.challenge = &challenge;
 
-//   char* gps_str = getGPSstring();
-//   if (!gps_str )
-//     gps_str = "";
-
-//   int readbytes = readfile( "machinecid", (uint8_t*)machinecid_buffer, 58+1);
-//   if( readbytes < 0 )
-//     memset((void*)machinecid_buffer,0, 58+1);
-
-//   Planetmintgo__Machine__Metadata metadata = PLANETMINTGO__MACHINE__METADATA__INIT;
-//   metadata.additionaldatacid = machinecid_buffer;
-//   metadata.gps = gps_str;
-//   metadata.assetdefinition = "{\"Version\": \"0.1\"}";
-//   metadata.device = "{\"Manufacturer\": \"RDDL\",\"Serial\":\"otherserial\"}";
-
-//   Planetmintgo__Machine__Machine machine = PLANETMINTGO__MACHINE__MACHINE__INIT;
-//   machine.name = (char*)sdk_address;
-//   machine.ticker = NULL;
-//   machine.domain = DEFAULT_DOMAIN_TEXT;
-//   machine.reissue = false;
-//   machine.amount = 1;
-//   machine.precision = 8;
-//   machine.issuerplanetmint = sdk_ext_pub_key_planetmint;
-//   machine.issuerliquid = sdk_ext_pub_key_liquid;
-//   machine.machineid = sdk_machineid_public_key_hex;
-//   machine.metadata = &metadata;
-//   machine.type = RDDL_MACHINE_POWER_SWITCH;
-//   machine.machineidsignature = signature_hex;
-//   machine.address = (char*)sdk_address;
- 
-//   Planetmintgo__Machine__MsgAttestMachine machineMsg = PLANETMINTGO__MACHINE__MSG_ATTEST_MACHINE__INIT;
-//   machineMsg.creator = (char*)sdk_address;
-//   machineMsg.machine = &machine;
-//   int ret = generateAnyAttestMachineMsg((Google__Protobuf__Any*)anyMsg, &machineMsg);
-//   if( ret<0 )
-//   {
-//     sprintf(responseArr, "No Attestation message\n");
-//     AddLogLineAbst(responseArr);
-//     return -1;
-//   }
-
-//   return 0;
-// }
-
+  int res = generateAnyPoPResultMsg((Google__Protobuf__Any*) anyMsg, &popResultMsg);
+  return res;
+}
 
 int registerMachine(void* anyMsg, const char* machineCategory, const char* manufacturer, const char* cid){
   

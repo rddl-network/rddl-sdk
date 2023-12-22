@@ -16,6 +16,7 @@ int parseJsonBoolean(const char *json, const char *key, bool *result);
 bool getPoPInfoFromJSON( const char* json);
 bool convertStringToInt64( const char* valueString, int64_t* targetValue );
 int GetRandomElementFromCIDJSONList(const char* json, char* cidBuffer, size_t bufferSize) ;
+int CreatePoPResult( void* anyMsg, bool PoPSuccess );
 
 #ifdef __cplusplus
 }

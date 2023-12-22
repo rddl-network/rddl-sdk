@@ -159,6 +159,8 @@ bool verifyCIDIntegrity( const char* cid, const char* content )
 }
 
 bool processPoPChallengeResponse( const char* jsonResponse, size_t length){
+    Google__Protobuf__Any anyMsg = GOOGLE__PROTOBUF__ANY__INIT;
+
     sdkClearStack();
     uint8_t* dataBuffer = sdkGetStack( length );
     uint8_t* cidBuffer = sdkGetStack( 64 );
@@ -188,8 +190,16 @@ bool processPoPChallengeResponse( const char* jsonResponse, size_t length){
     }
     const uint8_t* contentBytes = fromHexString(dataBuffer);
     AddLogLineAbst( "RET: %s", jsonResponse);
-    bool result = verifyCIDIntegrity( cidBuffer, contentBytes);
-    if( !result ){
+    bool PoPSuccess = verifyCIDIntegrity( cidBuffer, contentBytes);
+
+    //send out pop result to network
+    int resultPoPResult = CreatePoPResult( &anyMsg, PoPSuccess );
+    if( resultPoPResult >= 0 )
+      sendMessages(&anyMsg);
+    else
+      AddLogLineAbst( "RET: PoP unable to create PoPResult: %i", resultPoPResult);
+
+    if( !PoPSuccess ){
       AddLogLineAbst( "RET: CID verification failed: %s - %s ", cidBuffer, contentBytes);
       return false;
     }

@@ -7,6 +7,7 @@
 #include "rddlSDKAbst.h"
 #include "rddl.h"
 #include "unity.h"
+#include "google/protobuf/any.pb-c.h"
 
 
 const char testPoPInfo[]="{\
@@ -129,6 +130,16 @@ void testTokenAssumption(void){
 
 }
 
+void testCreatePopResult(void){
+  Google__Protobuf__Any anyMsg = GOOGLE__PROTOBUF__ANY__INIT;
+  abstClearStack();
+  resetPopInfo();
+  bool result = getPoPInfoFromJSON( testPoPInfo );
+  bool dataIntegrity = true;
+  int32_t res = CreatePoPResult( &anyMsg, dataIntegrity);
+  TEST_ASSERT_EQUAL_INT32( 0, res );
+}
+
 int main()
 {
     UNITY_BEGIN();
@@ -139,6 +150,7 @@ int main()
     RUN_TEST(testGetRandomElementFromCIDJSONListLarge);
     RUN_TEST(testFromChallengeToContent);
     RUN_TEST(testTokenAssumption);
+    RUN_TEST(testCreatePopResult);
 
     return UNITY_END();
 }
