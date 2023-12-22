@@ -386,6 +386,8 @@ char* getCIDtoBeChallenged(){
   if (GetRandomElementFromCIDJSONList(jsonObject, challengedCID, 64) < 0)
     return NULL;
   return challengedCID;
+}
+
 int abstGetNumOfCIDFiles(const char* path){
   DIR *dir;
   struct dirent *entry;
