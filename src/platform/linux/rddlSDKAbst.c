@@ -68,8 +68,8 @@ char sdk_denom[20] = {0};
 
 bool sdk_readSeed = false;
 
-static char curlCmd[256];
-static char curlOutput[1024];
+static char curlCmd[512];
+static char curlOutput[2048];
 
 char responseArr[4096];
 uint32_t num_of_cid_files = 0;
@@ -356,6 +356,37 @@ default:
   return retValue;
 }
 
+
+char* getCIDsLinux( const char* address ){
+  // Construct the cURL command
+  char uri[200] = {0};
+  const char* cmd = "planetmint/asset/get_cids_by_address";
+  snprintf( uri, sizeof(uri), "%s/%s/%s/%s", DEFAULT_API_TEXT, cmd, address, "2000");
+  snprintf(curlCmd, sizeof(curlCmd),
+            "curl -X GET \"%s\" -H \"accept: application/json\"", uri);
+
+  FILE* pipe = popen(curlCmd, "r");
+
+  if (!pipe) {
+      perror("popen");
+      return false;
+  }
+
+  while (fgets(curlOutput, sizeof(curlOutput), pipe) != NULL) {
+      printf("%s\n", curlOutput);
+  }
+
+  pclose(pipe);
+  return curlOutput;
+}
+
+char* getCIDtoBeChallenged(){
+  char* jsonObject = getCIDsLinux( (const char*)popParticipation.challengee );
+  memset( challengedCID, 0, 64);
+  if (GetRandomElementFromCIDJSONList(jsonObject, challengedCID, 64) < 0)
+    return NULL;
+  return challengedCID;
+}
 
 int abstGetNumOfCIDFiles(const char* path){
   DIR *dir;

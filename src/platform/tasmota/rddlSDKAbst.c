@@ -180,3 +180,11 @@ void SubscribeAbst( const char *topic ){
 void PublishPayloadAbst(const char* topic, const char* payload){
   PublishPayloadTasmota( topic, payload );
 }
+
+char* getCIDtoBeChallenged(){
+  clearStack();
+  char* jsonObject = getCIDsTasmota( (const char*)popParticipation.challengee );
+  if (GetRandomElementFromCIDJSONList(jsonObject, challengedCID, 64) < 0)
+    return NULL;
+  return challengedCID;
+}

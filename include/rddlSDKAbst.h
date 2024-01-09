@@ -54,6 +54,7 @@ extern uint32_t num_of_cid_files;
 
 typedef struct PoPInfo {
     int64_t blockHeight;
+    char initiator[64];
     char challenger[64];
     char challengee[64];
     bool finished;
@@ -83,6 +84,7 @@ int abstDeleteOldestCIDFile(const char* path);
 
 void SubscribeAbst( const char *topic );
 void PublishPayloadAbst(const char* topic, const char* payload);
+char* getCIDtoBeChallenged();
 
 
 #ifdef __cplusplus
