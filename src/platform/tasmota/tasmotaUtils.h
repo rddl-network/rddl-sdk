@@ -18,10 +18,12 @@ int tasmotaSerialPrint(const char* msg);
 char* tasmotaGetSetting(uint32_t index);
 bool tasmotaSetSetting(uint32_t index, const char* replacementText);
 int tasmotaGetNumOfCIDFiles(const char *path);
+char* tasmotaFindCIDFile(const char *path, const char *cidPart, char* filenameBuffer, size_t bufferSize );
 void tasmotaGetCIDFiles(const char *path);
 void tasmotaSortCIDFiles();
 int tasmotaDeleteOldestCIDFiles();
 void SubscribeTasmota( const char *topic );
+void UnsubscribeTasmota( const char *topic );
 void PublishPayloadTasmota(const char* topic, const char* payload);
 char* getCIDsTasmota( const char* address );
 

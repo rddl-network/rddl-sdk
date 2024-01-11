@@ -12,6 +12,9 @@
 #include "unity.h"
 #include "google/protobuf/any.pb-c.h"
 #include "rddl_cid.h"
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <errno.h>
 
 
 const char testPoPInfo[]="{\
@@ -91,6 +94,16 @@ char *rand_string(char *str, size_t size)
 void generateTestCIDFiles(int count){
   char rand_str[20];
   srand(time(NULL));
+
+  int status = mkdir("./CID_FILES", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+
+  if (status == 0) {
+      printf("Directory created successfully\n");
+  } else {
+    if (errno != EEXIST) {
+      perror("Error creating directory");
+    }
+  }
 
   for(int i=0; i<count; ++i){
     abstClearStack();

@@ -83,6 +83,7 @@ int abstGetNumOfCIDFiles(const char* path);
 int abstDeleteOldestCIDFile(const char* path);
 
 void SubscribeAbst( const char *topic );
+void UnsubscribeAbst( const char *topic );
 void PublishPayloadAbst(const char* topic, const char* payload);
 char* getCIDtoBeChallenged();
 

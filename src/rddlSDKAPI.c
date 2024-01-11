@@ -137,8 +137,9 @@ void runRDDLSDKNotarizationWorkflow(const char* data_str, size_t data_length){
   // register CID
   //registerCID( cid_str );
 
-  sprintf(responseArr, "Notarize: CID Asset\n");
+  sprintf(responseArr, "Notarize: CID Asset %s - file %s\n", cid_str, cid_name);
   printMsg(responseArr);
+  AddLogLineAbst(responseArr);
 
   generateAnyCIDAttestMsg(&anyMsg, cid_str, sdk_priv_key_planetmint, sdk_pub_key_planetmint, sdk_address, sdk_ext_pub_key_planetmint );
   sendMessages( &anyMsg );
@@ -168,6 +169,11 @@ bool verifyCIDIntegrity( const char* cid, const char* content )
 
 bool processPoPChallengeResponse( const char* jsonResponse, size_t length){
     Google__Protobuf__Any anyMsg = GOOGLE__PROTOBUF__ANY__INIT;
+
+
+    char subscriptionTopic[200] = {0};
+    sprintf( subscriptionTopic, "stat/%s/POPCHALLENGERESULT", popParticipation.challengee);
+    UnsubscribeAbst(subscriptionTopic);
 
     sdkClearStack();
     uint8_t* dataBuffer = sdkGetStack( length );
