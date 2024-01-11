@@ -25,7 +25,9 @@ extern bool TfsDeleteFile(const char *fname);
 
 std::vector<std::pair<String, int>> cid_files;
 extern void MqttSubscribe(const char *topic);
+extern void MqttUnsubscribe(const char *topic);
 extern void MqttPublishPayload(const char* topic, const char* payload);
+
 
 
 bool hasMachineBeenAttestedTasmota(const char* g_ext_pub_key_planetmint) {
@@ -67,14 +69,23 @@ bool rddlWritefileTasmota( const char* filename, uint8_t* content, size_t length
 
 int readfileTasmota( const char* filename, uint8_t* content, size_t length){
   char* filename_local = (char*) getStack( strlen( filename ) +2 );
+  char* filename_local_final = (char*) getStack( 100 +2);
+  memset( filename_local_final, 0, 100+2);
+  memset( filename_local, 0, strlen( filename )+2 );
   filename_local[0]= '/';
+  filename_local_final[0]= '/';
   int limit = 35;
   int offset = 0;
   if( strlen(filename) > limit)
-    offset = strlen(filename) -limit;
-  strcpy( &filename_local[1], filename+ offset);
-
-  return TfsLoadFile(filename_local, (uint8_t*)content, length);
+  {
+    offset = strlen(filename) -25; // 25 + 10 (UTS value as suffix)
+    strcpy( &filename_local[1], filename+ offset);
+    tasmotaFindCIDFile( "/", filename_local, filename_local_final, 100);
+  }
+  else 
+    strcpy( &filename_local_final[1], filename+ offset);
+  AddLogLineTasmota( "load file %s - %s - %s", filename, filename_local, filename_local_final);
+  return TfsLoadFile(filename_local_final, (uint8_t*)content, length);
 }
 
 
@@ -217,6 +228,33 @@ int tasmotaGetNumOfCIDFiles(const char *path){
   dir.close();
   return cnt;
 }
+#ifndef MIN
+#define MIN(a,b) ((a) < (b) ? (a) : (b))
+#endif
+char* tasmotaFindCIDFile(const char *path, const char *cidPart, char* filenameBuffer, size_t bufferSize ){
+  char* returnPointer = NULL;
+  FS* filesystem = TfsFlashFileSysHandle();
+  if( !filesystem ){
+    Serial.println("Failed to mount file system");
+    return NULL;
+  }
+
+  File dir = filesystem->open(path);
+  String nextFile = dir.getNextFileName();
+
+  while (nextFile.length() > 0) {
+    String cidPartPrime = (String)nextFile.substring(0,25+1); // add 1 because of the '/'of the path
+    if( cidPartPrime.equals( cidPart ) ){
+      memcpy(filenameBuffer, nextFile.c_str(), MIN(nextFile.length(), bufferSize) );
+      returnPointer = filenameBuffer;
+      break;
+    }
+      nextFile = dir.getNextFileName();
+  }
+
+  dir.close();
+  return returnPointer;
+}
 
 
 /* Depending on the number of files, this function may take minutes*/
@@ -268,6 +306,11 @@ int tasmotaDeleteOldestCIDFiles(){
 void SubscribeTasmota( const char *topic ){
   MqttSubscribe( topic );
 }
+
+void UnsubscribeTasmota( const char *topic ){
+  MqttUnsubscribe( topic );
+}
+
 
 
 void PublishPayloadTasmota(const char* topic, const char* payload){

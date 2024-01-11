@@ -177,6 +177,10 @@ void SubscribeAbst( const char *topic ){
   SubscribeTasmota( topic );
 }
 
+void UnsubscribeAbst( const char *topic ){
+  UnsubscribeTasmota( topic );
+}
+
 void PublishPayloadAbst(const char* topic, const char* payload){
   PublishPayloadTasmota( topic, payload );
 }

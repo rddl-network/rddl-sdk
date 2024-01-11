@@ -456,3 +456,11 @@ int abstDeleteOldestCIDFile(const char* path){
     return -1;
   }
 }
+
+void SubscribeAbst( const char *topic ){
+  return;
+}
+
+void UnsubscribeAbst( const char *topic ){
+  return;
+}
