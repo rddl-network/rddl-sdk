@@ -33,7 +33,7 @@ extern void MqttPublishPayload(const char* topic, const char* payload);
 bool hasMachineBeenAttestedTasmota(const char* g_ext_pub_key_planetmint) {
   HTTPClientLight http;
 
-  String uri = "/planetmint/machine/get_machine_by_public_key/";
+  String uri = "/planetmint/machine/public_key/";
   uri = tasmotaGetSetting( SDK_SET_PLANETMINT_API) + uri;
   uri = uri + g_ext_pub_key_planetmint;
   http.begin(uri);
@@ -160,7 +160,7 @@ bool getAccountInfoTasmota( const char* account_address, uint64_t* account_id, u
 bool getPoPInfoTasmota( const char* blockHeight){
   // get account info from planetmint-go
   HTTPClientLight http;
-  String uri = "/planetmint/planetmint-go/dao/get_challenge/";
+  String uri = "/planetmint/dao/challenge/";
 
   uri = tasmotaGetSetting( SDK_SET_PLANETMINT_API) + uri;
   uri = uri + blockHeight;
@@ -320,7 +320,7 @@ void PublishPayloadTasmota(const char* topic, const char* payload){
 char* getCIDsTasmota( const char* address ){
   char uri[300] = {0};
   HTTPClientLight http;
-  const char* cmd = "planetmint/asset/get_cids_by_address";
+  const char* cmd = "planetmint/asset/address";
   sprintf( uri, "%s/%s/%s/%s", tasmotaGetSetting( SDK_SET_PLANETMINT_API), cmd, address, "2000");
 
   http.begin(uri);
