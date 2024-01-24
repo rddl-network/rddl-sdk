@@ -1,0 +1,31 @@
+---
+name: Audit
+
+on:
+    schedule:
+        - cron: "0 3 * * *"
+    push:
+        branches:
+            - "*"
+        tags:
+            - "v*.*.*"
+    pull_request:
+        branches:
+            - "main"
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - uses: lukka/get-cmake@latest
+        with:
+          cmakeVersion: 3.17.2
+      - name: Install Protobuf
+        run: sudo apt install libprotobuf-c-dev cmake tree gcc g++
+      - name: Run Cmake
+        run: ./build.sh
+      - name: Unit Tests
+        run: ./runTest.sh
