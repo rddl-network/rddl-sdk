@@ -1,0 +1,17 @@
+---
+name: Audit
+
+on: [push]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: lukka/get-cmake@latest
+        with:
+          cmakeVersion: 3.17.2
+      - name: Run Cmake
+        run: ./build.sh
+      - name: Unit Tests
+        run: runTest.sh
