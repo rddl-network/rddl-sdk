@@ -28,4 +28,4 @@ jobs:
       - name: Run Cmake
         run: ./build.sh
       - name: Unit Tests
-        run: runTest.sh
+        run: ./runTest.sh
