@@ -1,13 +1,25 @@
 ---
 name: Audit
 
-on: [push]
+on:
+    schedule:
+        - cron: "0 3 * * *"
+    push:
+        branches:
+            - "*"
+        tags:
+            - "v*.*.*"
+    pull_request:
+        branches:
+            - "main"
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          submodules: recursive
       - uses: lukka/get-cmake@latest
         with:
           cmakeVersion: 3.17.2
