@@ -29,7 +29,7 @@
 #include "planetmintgo/machine/tx.pb-c.h"
 #include "planetmintgo/asset/tx.pb-c.h"
 #include "planetmintgo/dao/tx.pb-c.h"
-#include "planetmintgo/dao/challenge.pb-c.h"
+#include "planetmintgo/dao/challenge.pb-c.h"  
 #include "google/protobuf/any.pb-c.h"
 
 
@@ -37,6 +37,7 @@
 #include "rddlSDKAbst.h"
 #include "rddlSDKUtils.h"
 #include "rddlSDKSettings.h"
+#include "protobuf_abst.h"
 
 
 char* create_transaction( void* anyMsg, char* tokenAmount )
@@ -229,29 +230,10 @@ int registerMachine(void* anyMsg, const char* machineCategory, const char* manuf
   char* deviceDescription = (char*)abstGetStack( desLength );
   sprintf( deviceDescription, "{\"Category\":\"%s\", \"Manufacturer\":\"%s\"}", machineCategory, manufacturer);
 
-
-  Planetmintgo__Machine__Metadata metadata = PLANETMINTGO__MACHINE__METADATA__INIT;
-  metadata.additionaldatacid = (char*)cid;
-  metadata.gps = gps_str;
-  metadata.assetdefinition = "{\"Version\":\"0.2\"}";
-  metadata.device = deviceDescription;
-
-  Planetmintgo__Machine__Machine machine = PLANETMINTGO__MACHINE__MACHINE__INIT;
-  machine.name = (char*)sdk_address;
-  
-  machine.issuerplanetmint = sdk_ext_pub_key_planetmint;
-  machine.issuerliquid = sdk_ext_pub_key_liquid;
-  machine.machineid = sdk_machineid_public_key_hex;
-  machine.metadata = &metadata;
-  machine.type = RDDL_MACHINE_POWER_SWITCH;
-  machine.machineidsignature = signature_hex;
-  machine.address = (char*)sdk_address;
-
- 
-  Planetmintgo__Machine__MsgAttestMachine machineMsg = PLANETMINTGO__MACHINE__MSG_ATTEST_MACHINE__INIT;
-  machineMsg.creator = (char*)sdk_address;
-  machineMsg.machine = &machine;
-  int ret = generateAnyAttestMachineMsg((Google__Protobuf__Any*)anyMsg, &machineMsg);
+  void* metadata_ptr    = fullfill_planetmintgo_machine_metadata((char *)cid, gps_str, "{\"Version\":\"0.2\"}", deviceDescription);
+  void* machine_ptr     = fullfill_planetmintgo_machine_machine(metadata_ptr, signature_hex);
+  void* machineMsg_ptr  = fullfill_planetmintgo_machine_msgAttestMachine(machine_ptr);
+  int ret = bind_msgAttestMachine_to_anyMsg(anyMsg, machineMsg_ptr);
 
   if( ret<0 )
   {
