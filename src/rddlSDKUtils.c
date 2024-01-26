@@ -239,12 +239,6 @@ int registerMachine(void* anyMsg, const char* machineCategory, const char* manuf
   Planetmintgo__Machine__Machine machine = PLANETMINTGO__MACHINE__MACHINE__INIT;
   machine.name = (char*)sdk_address;
   
-  machine.ticker = NULL;                 //obsolete
-  machine.domain = "";                   //obsolete
-  machine.reissue = false;               //obsolete
-  machine.amount = 1;                    //obsolete
-  machine.precision = 8;                 //obsolete
-  
   machine.issuerplanetmint = sdk_ext_pub_key_planetmint;
   machine.issuerliquid = sdk_ext_pub_key_liquid;
   machine.machineid = sdk_machineid_public_key_hex;
