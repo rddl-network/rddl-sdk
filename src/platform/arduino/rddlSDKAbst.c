@@ -11,6 +11,7 @@
 #include "rddlSDKUtils.h"
 #include "configFile.h"
 #include "arduinoUtils.h"
+#include "planetmintgo.h"
 
 uint8_t sdk_priv_key_planetmint[32+1] = {0};
 uint8_t sdk_priv_key_liquid[32+1] = {0};

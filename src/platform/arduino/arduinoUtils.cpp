@@ -1,5 +1,4 @@
 #include <Arduino.h>
-#include <HttpClient.h>
 
 extern "C" {
   #include "arduinoUtils.h"
