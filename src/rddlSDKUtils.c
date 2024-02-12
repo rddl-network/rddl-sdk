@@ -1,5 +1,5 @@
-#include <stdbool.h>
-#include <unistd.h>
+// #include <stdbool.h>
+// #include <unistd.h>
 #include <math.h>
 #include <string.h>
 #include <stdio.h>
@@ -7,31 +7,24 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #include "rddl.h"
 #include "rddl_cid.h"
 #include "bip32.h"
 
-#ifdef LINUX_MACHINE
-  #include "base64.h"
-  #include <sys/random.h>
-#else
-  #include "esp_random.h"
-  #include "libs/base64_planetmint/src/base64_plntmnt.h"
-#endif
+#include "base64.h"
+// #ifdef LINUX_MACHINE
+//   #include "base64.h"
+//   #include <sys/random.h>
+// #else
+//   #include "esp_random.h"
+//   #include "libs/base64_planetmint/src/base64_plntmnt.h"
+// #endif
 #include "curves.h"  
 #include "secp256k1.h"
 
 #include "rddl_types.h"
-#include "cosmos/tx/v1beta1/tx.pb-c.h"
-#include "planetmintgo.h"
-#include "planetmintgo/machine/machine.pb-c.h"
-#include "planetmintgo/machine/tx.pb-c.h"
-#include "planetmintgo/asset/tx.pb-c.h"
-#include "planetmintgo/dao/tx.pb-c.h"
-#include "planetmintgo/dao/challenge.pb-c.h"  
-#include "google/protobuf/any.pb-c.h"
-
 
 #include "configFile.h"
 #include "rddlSDKAbst.h"
@@ -50,14 +43,12 @@ char* create_transaction( void* anyMsg, char* tokenAmount )
     return NULL;
   }
 
-  Cosmos__Base__V1beta1__Coin coin = COSMOS__BASE__V1BETA1__COIN__INIT;
-  coin.denom = getSetting( SDK_SET_PLANETMINT_DENOM ); //getDenom();
-  coin.amount = tokenAmount;
-  
+  void* coin  = fullfill_cosmos_base_v1beta1_coin(getSetting( SDK_SET_PLANETMINT_DENOM ), tokenAmount);
+    
   uint8_t* txbytes = NULL;
   size_t tx_size = 0;
   char* chain_id = getSetting( SDK_SET_PLANETMINT_CHAINID ); //getChainID();
-  int ret = prepareTx( (Google__Protobuf__Any*)anyMsg, &coin, sdk_priv_key_planetmint, sdk_pub_key_planetmint, sequence, chain_id, account_id, &txbytes, &tx_size);
+  int ret = prepareTx( anyMsg, coin, sdk_priv_key_planetmint, sdk_pub_key_planetmint, sequence, chain_id, account_id, &txbytes, &tx_size);
   if( ret < 0 )
     return NULL;
 
@@ -94,7 +85,7 @@ uint8_t* readSeed()
   int readbytes = readfile( "seed", secret_seed, SEED_SIZE);
   /* For TEST PURPOSE */
   // memcpy(secret_seed, "12345d8b5ee5bcefd523ee4d4340a8956affbef5bb1978eb1e3f640318f87f4b6438733879360f460932fa68bfc06ae8aaf837b5d45891d114a58d8ce19a17d7", SEED_SIZE);
-  // int readbytes = SEED_SIZE;
+  readbytes = SEED_SIZE;
 
   sprintf(responseArr, "{ \"%s\":\"%d\" }", "READ SIZE", readbytes);
   AddLogLineAbst(responseArr);
@@ -162,7 +153,7 @@ bool getPlntmntKeys(){
   pubkey2address( sdk_pub_key_planetmint, PUB_KEY_SIZE, address_bytes );
   getAddressString( address_bytes, sdk_address);
   uint32_t fingerprint = hdnode_fingerprint(&node_planetmint);
-  hdnode_serialize_public( &node_planetmint, fingerprint, PLANETMINT_PMPB, sdk_ext_pub_key_planetmint, EXT_PUB_KEY_SIZE);
+  hdnode_serialize_public( &node_planetmint, fingerprint, 0x03E14247, sdk_ext_pub_key_planetmint, EXT_PUB_KEY_SIZE);
   hdnode_serialize_public( &node_rddl, fingerprint, VERSION_PUBLIC, sdk_ext_pub_key_liquid, EXT_PUB_KEY_SIZE);
 
   ecdsa_get_public_key33(&secp256k1, private_key_machine_id, sdk_machineid_public_key);
@@ -171,40 +162,40 @@ bool getPlntmntKeys(){
 }
 
 
-void signRDDLNetworkMessageContent( const char* data_str, size_t data_length, char* sig_out){
-  char pubkey_out[66+1] = {0};
-  char hash_out[64+1] = {0};
-  if( readSeed() != NULL )
-  {
-    SignDataHash( data_str, data_length,  pubkey_out, sig_out, hash_out);
-  }
+// void signRDDLNetworkMessageContent( const char* data_str, size_t data_length, char* sig_out){
+//   char pubkey_out[66+1] = {0};
+//   char hash_out[64+1] = {0};
+//   if( readSeed() != NULL )
+//   {
+//     SignDataHash( data_str, data_length,  pubkey_out, sig_out, hash_out);
+//   }
 
-  /* Bunlar PlatformIO Specific */
-  sprintf(responseArr, PSTR(",\"%s\":\"%s\"\n"), "Hash", hash_out);
-  AddLogLineAbst(responseArr);
-  sprintf(responseArr, PSTR(",\"%s\":\"%s\"\n"), "Signature", sig_out);
-  AddLogLineAbst(responseArr);
-  sprintf(responseArr, PSTR(",\"%s\":\"%s\"\n"), "PublicKey", pubkey_out);
-  AddLogLineAbst(responseArr);
-}
+//   /* Bunlar PlatformIO Specific */
+//   sprintf(responseArr, PSTR(",\"%s\":\"%s\"\n"), "Hash", hash_out);
+//   AddLogLineAbst(responseArr);
+//   sprintf(responseArr, PSTR(",\"%s\":\"%s\"\n"), "Signature", sig_out);
+//   AddLogLineAbst(responseArr);
+//   sprintf(responseArr, PSTR(",\"%s\":\"%s\"\n"), "PublicKey", pubkey_out);
+//   AddLogLineAbst(responseArr);
+// }
 
 
-int CreatePoPResult( void* anyMsg, bool PoPSuccess ){
+// int CreatePoPResult( void* anyMsg, bool PoPSuccess ){
 
-  Planetmintgo__Dao__Challenge challenge = PLANETMINTGO__DAO__CHALLENGE__INIT;
-  challenge.initiator = popParticipation.initiator;
-  challenge.challenger = popParticipation.challenger;
-  challenge.challengee = popParticipation.challengee;
-  challenge.height = popParticipation.blockHeight;
-  challenge.success = PoPSuccess;
-  challenge.finished = true;
-  Planetmintgo__Dao__MsgReportPopResult popResultMsg = PLANETMINTGO__DAO__MSG_REPORT_POP_RESULT__INIT;
-  popResultMsg.creator = sdk_address;
-  popResultMsg.challenge = &challenge;
+//   Planetmintgo__Dao__Challenge challenge = PLANETMINTGO__DAO__CHALLENGE__INIT;
+//   challenge.initiator = popParticipation.initiator;
+//   challenge.challenger = popParticipation.challenger;
+//   challenge.challengee = popParticipation.challengee;
+//   challenge.height = popParticipation.blockHeight;
+//   challenge.success = PoPSuccess;
+//   challenge.finished = true;
+//   Planetmintgo__Dao__MsgReportPopResult popResultMsg = PLANETMINTGO__DAO__MSG_REPORT_POP_RESULT__INIT;
+//   popResultMsg.creator = sdk_address;
+//   popResultMsg.challenge = &challenge;
 
-  int res = generateAnyPoPResultMsg((Google__Protobuf__Any*) anyMsg, &popResultMsg);
-  return res;
-}
+//   int res = generateAnyPoPResultMsg((Google__Protobuf__Any*) anyMsg, &popResultMsg);
+//   return res;
+// }
 
 int registerMachine(void* anyMsg, const char* machineCategory, const char* manufacturer, const char* cid){
   
@@ -231,8 +222,9 @@ int registerMachine(void* anyMsg, const char* machineCategory, const char* manuf
   sprintf( deviceDescription, "{\"Category\":\"%s\", \"Manufacturer\":\"%s\"}", machineCategory, manufacturer);
 
   void* metadata_ptr    = fullfill_planetmintgo_machine_metadata((char *)cid, gps_str, "{\"Version\":\"0.2\"}", deviceDescription);
-  void* machine_ptr     = fullfill_planetmintgo_machine_machine(metadata_ptr, signature_hex);
-  void* machineMsg_ptr  = fullfill_planetmintgo_machine_msgAttestMachine(machine_ptr);
+  void* machine_ptr     = fullfill_planetmintgo_machine_machine(metadata_ptr, signature_hex, sdk_address, sdk_ext_pub_key_planetmint,
+                                                                sdk_ext_pub_key_liquid, sdk_machineid_public_key_hex, RDDL_MACHINE_POWER_SWITCH);
+  void* machineMsg_ptr  = fullfill_planetmintgo_machine_msgAttestMachine(machine_ptr, sdk_address);
   int ret = bind_msgAttestMachine_to_anyMsg(anyMsg, machineMsg_ptr);
 
   if( ret<0 )
@@ -254,195 +246,195 @@ int sendMessages( void* pAnyMsg) {
     return -1;
   sprintf(responseArr, "TX broadcast:\n");
   AddLogLineAbst(responseArr);
-  int broadcast_return = broadcast_transaction( tx_payload );
+  // int broadcast_return = broadcast_transaction( tx_payload );
 
-  return broadcast_return;
+  // return broadcast_return;
 }
 
 
-int copyJsonValueString(char *buffer, size_t buffer_len, const char *json, const char *key) {
-    char key_pattern[100];  // Size depends on expected length of keys
-    sprintf(key_pattern, "\"%s\": \"", key); // Constructs the key pattern
+// int copyJsonValueString(char *buffer, size_t buffer_len, const char *json, const char *key) {
+//     char key_pattern[100];  // Size depends on expected length of keys
+//     sprintf(key_pattern, "\"%s\": \"", key); // Constructs the key pattern
 
-    char *start = strstr(json, key_pattern); // Finds the key in JSON
-    if (start == NULL) {
-      sprintf(key_pattern, "\"%s\":\"", key);
-      start = strstr(json, key_pattern);
-      if (start == NULL) {
-        printf("Key not found.\n");
-        return -1;
-      }
-    }
+//     char *start = strstr(json, key_pattern); // Finds the key in JSON
+//     if (start == NULL) {
+//       sprintf(key_pattern, "\"%s\":\"", key);
+//       start = strstr(json, key_pattern);
+//       if (start == NULL) {
+//         printf("Key not found.\n");
+//         return -1;
+//       }
+//     }
 
-    start += strlen(key_pattern); // Moves to the value part
-    char *end = strchr(start, '\"'); // Finds the end of the value
+//     start += strlen(key_pattern); // Moves to the value part
+//     char *end = strchr(start, '\"'); // Finds the end of the value
 
-    if (end == NULL) {
-        printf("Invalid JSON format.\n");
-        return -2;
-    }
+//     if (end == NULL) {
+//         printf("Invalid JSON format.\n");
+//         return -2;
+//     }
 
-    size_t value_len = end - start;
-    if (value_len >= buffer_len) {
-        printf("Buffer too small.\n");
-        return -3;
-    }
+//     size_t value_len = end - start;
+//     if (value_len >= buffer_len) {
+//         printf("Buffer too small.\n");
+//         return -3;
+//     }
 
-    strncpy(buffer, start, value_len);
-    buffer[value_len] = '\0'; // Null-terminate the string
-    return 0;
-}
-
-
-
-int parseJsonBoolean(const char *json, const char *key, bool *result) {
-    char key_pattern[100]; // Adjust size as needed
-    sprintf(key_pattern, "\"%s\": ", key);
-
-    char *key_ptr = strstr(json, key_pattern);
-    if (key_ptr == NULL) {
-      sprintf(key_pattern, "\"%s\":", key);
-      key_ptr = strstr(json, key_pattern);
-      if (key_ptr == NULL) {
-        return -1; // Key not found
-      }
-    }
-
-    key_ptr += strlen(key_pattern); // Move to value position
-
-    if (strncmp(key_ptr, "true", 4) == 0) {
-        *result = true;
-        return 0;
-    } else if (strncmp(key_ptr, "false", 5) == 0) {
-        *result = false;
-        return 0;
-    }
-
-    return -2; // Invalid boolean value
-}
-
-bool convertStringToInt64( const char* valueString, int64_t* targetValue ){
-
-  char* endptr;
-  errno = 0;
-  *targetValue = strtoll(valueString, &endptr, 10); // Convert string to int64_t
-
-  // Check for various possible errors
-  if ((errno == ERANGE && (*targetValue == LLONG_MAX || *targetValue == LLONG_MIN)) || (errno != 0 && *targetValue == 0)) {
-      perror("Conversion error");
-      return false;
-  }
-  if (endptr == valueString) {
-      fprintf(stderr, "No digits were found\n");
-      return false;
-  }
-  return true;
-}
-
-bool getPoPInfoFromJSON( const char* json){
-  AddLogLineAbst( "PoPInfo: %s", json );
-  resetPopInfo();
-
-  int result = copyJsonValueString( popParticipation.initiator, sizeof(popParticipation.initiator), json, "initiator");
-  if( result ){
-    resetPopInfo();
-    return false;
-  }
-  result = copyJsonValueString( popParticipation.challenger, sizeof(popParticipation.challenger), json, "challenger");
-  if( result ){
-    resetPopInfo();
-    return false;
-  }
-  result = copyJsonValueString( popParticipation.challengee, sizeof(popParticipation.challengee), json, "challengee");
-  if( result ){
-    resetPopInfo();
-    return false;
-  }
+//     strncpy(buffer, start, value_len);
+//     buffer[value_len] = '\0'; // Null-terminate the string
+//     return 0;
+// }
 
 
-  char blockHeight[30] = {0};
-  result = copyJsonValueString( blockHeight, sizeof(blockHeight), json, "height");
-  if( result ){
-    resetPopInfo();
-    return false;
-  }
-  result = convertStringToInt64( blockHeight, &popParticipation.blockHeight);
-  if( !result ){
-    resetPopInfo();
-    return false;
-  }
+
+// int parseJsonBoolean(const char *json, const char *key, bool *result) {
+//     char key_pattern[100]; // Adjust size as needed
+//     sprintf(key_pattern, "\"%s\": ", key);
+
+//     char *key_ptr = strstr(json, key_pattern);
+//     if (key_ptr == NULL) {
+//       sprintf(key_pattern, "\"%s\":", key);
+//       key_ptr = strstr(json, key_pattern);
+//       if (key_ptr == NULL) {
+//         return -1; // Key not found
+//       }
+//     }
+
+//     key_ptr += strlen(key_pattern); // Move to value position
+
+//     if (strncmp(key_ptr, "true", 4) == 0) {
+//         *result = true;
+//         return 0;
+//     } else if (strncmp(key_ptr, "false", 5) == 0) {
+//         *result = false;
+//         return 0;
+//     }
+
+//     return -2; // Invalid boolean value
+// }
+
+// bool convertStringToInt64( const char* valueString, int64_t* targetValue ){
+
+//   char* endptr;
+//   errno = 0;
+//   *targetValue = strtoll(valueString, &endptr, 10); // Convert string to int64_t
+
+//   // Check for various possible errors
+//   if ((errno == ERANGE && (*targetValue == LLONG_MAX || *targetValue == LLONG_MIN)) || (errno != 0 && *targetValue == 0)) {
+//       perror("Conversion error");
+//       return false;
+//   }
+//   if (endptr == valueString) {
+//       fprintf(stderr, "No digits were found\n");
+//       return false;
+//   }
+//   return true;
+// }
+
+// bool getPoPInfoFromJSON( const char* json){
+//   AddLogLineAbst( "PoPInfo: %s", json );
+//   resetPopInfo();
+
+//   int result = copyJsonValueString( popParticipation.initiator, sizeof(popParticipation.initiator), json, "initiator");
+//   if( result ){
+//     resetPopInfo();
+//     return false;
+//   }
+//   result = copyJsonValueString( popParticipation.challenger, sizeof(popParticipation.challenger), json, "challenger");
+//   if( result ){
+//     resetPopInfo();
+//     return false;
+//   }
+//   result = copyJsonValueString( popParticipation.challengee, sizeof(popParticipation.challengee), json, "challengee");
+//   if( result ){
+//     resetPopInfo();
+//     return false;
+//   }
+
+
+//   char blockHeight[30] = {0};
+//   result = copyJsonValueString( blockHeight, sizeof(blockHeight), json, "height");
+//   if( result ){
+//     resetPopInfo();
+//     return false;
+//   }
+//   result = convertStringToInt64( blockHeight, &popParticipation.blockHeight);
+//   if( !result ){
+//     resetPopInfo();
+//     return false;
+//   }
   
-  result = parseJsonBoolean(json, "finished", &popParticipation.finished);
-  if( result ){
-    resetPopInfo();
-    return false;
-  }
+//   result = parseJsonBoolean(json, "finished", &popParticipation.finished);
+//   if( result ){
+//     resetPopInfo();
+//     return false;
+//   }
   
-  return true;
-}
+//   return true;
+// }
 
 
-void checkNumOfCIDFiles(const char* path){
-  if(num_of_cid_files == 0)
-    num_of_cid_files = abstGetNumOfCIDFiles(path);
-  else
-    num_of_cid_files++;
+// void checkNumOfCIDFiles(const char* path){
+//   if(num_of_cid_files == 0)
+//     num_of_cid_files = abstGetNumOfCIDFiles(path);
+//   else
+//     num_of_cid_files++;
   
-  if(abstDeleteOldestCIDFile(path) == 0)
-    num_of_cid_files--;
-}
+//   if(abstDeleteOldestCIDFile(path) == 0)
+//     num_of_cid_files--;
+// }
 
 
-// Function to count the number of elements in the "cids" array
-int countElements(const char* start, const char* end) {
-    int count = 0;
-    const char* temp = start;
-    while (temp < end && (temp = strstr(temp, "\"b"))) {
-        count++;
-        temp++;
-    }
-    return count;
-}
-#define MIN(x, y) (((x) < (y)) ? (x) : (y))
-// Function to extract the nth element from the "cids" array
-void extractElement(const char* start, int index, char* result, size_t resultBufferSize) {
-    const char* temp = start;
-    for (int i = 0; i <= index; ++i) {
-        temp = strstr(temp, "\"b");
-        temp++;
-    }
-    // Assuming each element is not longer than 100 characters
-    strncpy(result, temp, MIN( resultBufferSize, strlen(temp)) );
-    char* endOfElement = strchr(result, '\"');
-    if (endOfElement) 
-      *endOfElement = '\0';
-    else
-      result[resultBufferSize-1] = '\0';
+// // Function to count the number of elements in the "cids" array
+// int countElements(const char* start, const char* end) {
+//     int count = 0;
+//     const char* temp = start;
+//     while (temp < end && (temp = strstr(temp, "\"b"))) {
+//         count++;
+//         temp++;
+//     }
+//     return count;
+// }
+// #define MIN(x, y) (((x) < (y)) ? (x) : (y))
+// // Function to extract the nth element from the "cids" array
+// void extractElement(const char* start, int index, char* result, size_t resultBufferSize) {
+//     const char* temp = start;
+//     for (int i = 0; i <= index; ++i) {
+//         temp = strstr(temp, "\"b");
+//         temp++;
+//     }
+//     // Assuming each element is not longer than 100 characters
+//     strncpy(result, temp, MIN( resultBufferSize, strlen(temp)) );
+//     char* endOfElement = strchr(result, '\"');
+//     if (endOfElement) 
+//       *endOfElement = '\0';
+//     else
+//       result[resultBufferSize-1] = '\0';
 
-}
+// }
 
-int GetRandomElementFromCIDJSONList(const char* json, char* cidBuffer, size_t bufferSize ) {    
-    // Find the start and end of the "cids" array
-    const char* start = strstr(json, "[");
-    const char* end = strstr(json, "]");
+// int GetRandomElementFromCIDJSONList(const char* json, char* cidBuffer, size_t bufferSize ) {    
+//     // Find the start and end of the "cids" array
+//     const char* start = strstr(json, "[");
+//     const char* end = strstr(json, "]");
        
-    if (start && end) {
-        int count = countElements(start, end);
-        unsigned int randomValue;
-        int randomIndex;
-#ifdef LINUX_MACHINE
-        getrandom(&randomValue, sizeof(randomValue), 0);
-#else
-        esp_fill_random( &randomValue, sizeof(randomValue));
-        randomValue = (unsigned int) random();
-#endif
-        randomIndex = randomValue % count;
-        extractElement(start, randomIndex, cidBuffer, bufferSize);
+//     if (start && end) {
+//         int count = countElements(start, end);
+//         unsigned int randomValue;
+//         int randomIndex;
+// #ifdef LINUX_MACHINE
+//         getrandom(&randomValue, sizeof(randomValue), 0);
+// #else
+//         esp_fill_random( &randomValue, sizeof(randomValue));
+//         randomValue = (unsigned int) random();
+// #endif
+//         randomIndex = randomValue % count;
+//         extractElement(start, randomIndex, cidBuffer, bufferSize);
 
-        printf("Random Element: %u %s\n",randomIndex, cidBuffer);
-        return randomIndex;
-    } else {
-        printf("Error parsing JSON string.\n");
-    }
-    return -1;
-}
+//         printf("Random Element: %u %s\n",randomIndex, cidBuffer);
+//         return randomIndex;
+//     } else {
+//         printf("Error parsing JSON string.\n");
+//     }
+//     return -1;
+// }
