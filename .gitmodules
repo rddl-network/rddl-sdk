@@ -1,0 +1,3 @@
+[submodule "libs/librddl"]
+	path = libs/librddl
+	url = git@github.com:rddl-network/librddl.git
