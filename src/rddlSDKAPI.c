@@ -13,6 +13,7 @@
 #include "rddlSDKAbst.h"
 #include "rddlSDKUtils.h"
 #include "rddlSDKAPI.h"
+#include "planetmintgo.h"
 #include "protobuf_abst.h"
 
 
