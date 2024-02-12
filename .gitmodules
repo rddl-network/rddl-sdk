@@ -2,3 +2,5 @@
 	path = libs/librddl
 	url = git@github.com:rddl-network/librddl.git
     branch = fasagidag/adding_nanopb
+[submodule "libs/librddl/"]
+	branch = fasagidag/adding_nanopb
