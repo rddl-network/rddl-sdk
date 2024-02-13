@@ -180,23 +180,6 @@ bool getPlntmntKeys(){
 // }
 
 
-// int CreatePoPResult( void* anyMsg, bool PoPSuccess ){
-
-//   Planetmintgo__Dao__Challenge challenge = PLANETMINTGO__DAO__CHALLENGE__INIT;
-//   challenge.initiator = popParticipation.initiator;
-//   challenge.challenger = popParticipation.challenger;
-//   challenge.challengee = popParticipation.challengee;
-//   challenge.height = popParticipation.blockHeight;
-//   challenge.success = PoPSuccess;
-//   challenge.finished = true;
-//   Planetmintgo__Dao__MsgReportPopResult popResultMsg = PLANETMINTGO__DAO__MSG_REPORT_POP_RESULT__INIT;
-//   popResultMsg.creator = sdk_address;
-//   popResultMsg.challenge = &challenge;
-
-//   int res = generateAnyPoPResultMsg((Google__Protobuf__Any*) anyMsg, &popResultMsg);
-//   return res;
-// }
-
 int registerMachine(void* anyMsg, const char* machineCategory, const char* manufacturer, const char* cid){
   
   uint8_t signature[64]={0};
@@ -252,38 +235,38 @@ int sendMessages( void* pAnyMsg) {
 }
 
 
-// int copyJsonValueString(char *buffer, size_t buffer_len, const char *json, const char *key) {
-//     char key_pattern[100];  // Size depends on expected length of keys
-//     sprintf(key_pattern, "\"%s\": \"", key); // Constructs the key pattern
+int copyJsonValueString(char *buffer, size_t buffer_len, const char *json, const char *key) {
+    char key_pattern[100];  // Size depends on expected length of keys
+    sprintf(key_pattern, "\"%s\": \"", key); // Constructs the key pattern
 
-//     char *start = strstr(json, key_pattern); // Finds the key in JSON
-//     if (start == NULL) {
-//       sprintf(key_pattern, "\"%s\":\"", key);
-//       start = strstr(json, key_pattern);
-//       if (start == NULL) {
-//         printf("Key not found.\n");
-//         return -1;
-//       }
-//     }
+    char *start = strstr(json, key_pattern); // Finds the key in JSON
+    if (start == NULL) {
+      sprintf(key_pattern, "\"%s\":\"", key);
+      start = strstr(json, key_pattern);
+      if (start == NULL) {
+        printf("Key not found.\n");
+        return -1;
+      }
+    }
 
-//     start += strlen(key_pattern); // Moves to the value part
-//     char *end = strchr(start, '\"'); // Finds the end of the value
+    start += strlen(key_pattern); // Moves to the value part
+    char *end = strchr(start, '\"'); // Finds the end of the value
 
-//     if (end == NULL) {
-//         printf("Invalid JSON format.\n");
-//         return -2;
-//     }
+    if (end == NULL) {
+        printf("Invalid JSON format.\n");
+        return -2;
+    }
 
-//     size_t value_len = end - start;
-//     if (value_len >= buffer_len) {
-//         printf("Buffer too small.\n");
-//         return -3;
-//     }
+    size_t value_len = end - start;
+    if (value_len >= buffer_len) {
+        printf("Buffer too small.\n");
+        return -3;
+    }
 
-//     strncpy(buffer, start, value_len);
-//     buffer[value_len] = '\0'; // Null-terminate the string
-//     return 0;
-// }
+    strncpy(buffer, start, value_len);
+    buffer[value_len] = '\0'; // Null-terminate the string
+    return 0;
+}
 
 
 

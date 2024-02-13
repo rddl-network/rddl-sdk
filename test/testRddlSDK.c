@@ -2,6 +2,7 @@
 #include "stdint.h"
 #include <stdbool.h> 
 #include <string.h>
+#include "rddl.h"
 #include "rddlSDKAPI.h"
 #include "rddlSDKAbst.h"
 #include "unity.h"

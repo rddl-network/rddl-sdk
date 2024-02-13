@@ -135,81 +135,84 @@ void runRDDLSDKNotarizationWorkflow(const char* data_str, size_t data_length){
   sendMessages( anyMsg );
 }
 
-// bool amIChallenger(){
-//   if( getPlntmntKeys() )
-//     return (strcmp( (const char*)sdk_address, (const char*)popParticipation.challenger ) == 0);
-//   return false;
-// }
+
+bool amIChallenger(){
+  if( getPlntmntKeys() )
+    return (strcmp( (const char*)sdk_address, (const char*)popParticipation.challenger ) == 0);
+  return false;
+}
 
 // bool getPoPFromChain(const char* blockHeight ){
 //   return getPoPInfo( blockHeight );
 // }
-// bool verifyCIDIntegrity( const char* cid, const char* content )
-// {
-//   bool valid = false;
-//   if( !content )
-//     return valid;
-
-//   char* cid_str = create_cid_v1_from_string( content );
-//   if( cid_str && cid && strcasecmp( cid, cid_str) == 0)
-//     valid = true;
-
-//   return valid;
-// }
-
-// bool processPoPChallengeResponse( const char* jsonResponse, size_t length){
-//     Google__Protobuf__Any anyMsg = GOOGLE__PROTOBUF__ANY__INIT;
 
 
-//     char subscriptionTopic[200] = {0};
-//     sprintf( subscriptionTopic, "stat/%s/POPCHALLENGERESULT", popParticipation.challengee);
-//     UnsubscribeAbst(subscriptionTopic);
+bool verifyCIDIntegrity( const char* cid, const char* content )
+{
+  bool valid = false;
+  if( !content )
+    return valid;
 
-//     sdkClearStack();
-//     uint8_t* dataBuffer = sdkGetStack( length );
-//     uint8_t* cidBuffer = sdkGetStack( 64 );
-//     uint8_t encoding[10] = {0};
-//     int failed = copyJsonValueString( dataBuffer, length, jsonResponse, "data");
-//     if( failed ) {
-//       AddLogLineAbst( "RET: could not extract data");
-//       return false;
-//     }
-//     failed = copyJsonValueString( encoding, 10, jsonResponse, "encoding");
-//     if( failed ) {
-//       AddLogLineAbst( "RET: could not extract encoding");
-//       return false;
-//     }
-//     failed = copyJsonValueString( cidBuffer, 64, jsonResponse, "cid");
-//     if( failed ) {
-//       AddLogLineAbst( "RET: could not extract CID");
-//       return false;
-//     }
-//     if (strcmp( "hex", encoding) != 0 ){
-//       AddLogLineAbst( "RET: unsupported encoding %s", encoding);
-//       return false;
-//     }
-//     if( strcmp( challengedCID, cidBuffer ) != 0 ){
-//       AddLogLineAbst( "RET: wrong CID - exp: %s deliviered: %s ", challengedCID, cidBuffer);
-//       return false;
-//     }
-//     const uint8_t* contentBytes = fromHexString(dataBuffer);
-//     AddLogLineAbst( "RET: %s", jsonResponse);
-//     bool PoPSuccess = verifyCIDIntegrity( cidBuffer, contentBytes);
+  char* cid_str = create_cid_v1_from_string( content );
+  if( cid_str && cid && strcasecmp( cid, cid_str) == 0)
+    valid = true;
 
-//     //send out pop result to network
-//     int resultPoPResult = CreatePoPResult( &anyMsg, PoPSuccess );
-//     if( resultPoPResult >= 0 )
-//       sendMessages(&anyMsg);
-//     else
-//       AddLogLineAbst( "RET: PoP unable to create PoPResult: %i", resultPoPResult);
+  return valid;
+}
 
-//     if( !PoPSuccess ){
-//       AddLogLineAbst( "RET: CID verification failed: %s - %s ", cidBuffer, contentBytes);
-//       return false;
-//     }
-//     AddLogLineAbst( "RET: PoP successfully passed");
-//     return true;
-// }
+
+bool processPoPChallengeResponse( const char* jsonResponse, size_t length){
+    sdkClearStack();
+    void* anyMsg = Create_AnyMsg();
+
+    char subscriptionTopic[200] = {0};
+    sprintf( subscriptionTopic, "stat/%s/POPCHALLENGERESULT", popParticipation.challengee);
+    UnsubscribeAbst(subscriptionTopic);
+
+    uint8_t* dataBuffer = sdkGetStack( length );
+    uint8_t* cidBuffer = sdkGetStack( 64 );
+    uint8_t encoding[10] = {0};
+    int failed = copyJsonValueString( dataBuffer, length, jsonResponse, "data");
+    if( failed ) {
+      AddLogLineAbst( "RET: could not extract data");
+      return false;
+    }
+    failed = copyJsonValueString( encoding, 10, jsonResponse, "encoding");
+    if( failed ) {
+      AddLogLineAbst( "RET: could not extract encoding");
+      return false;
+    }
+    failed = copyJsonValueString( cidBuffer, 64, jsonResponse, "cid");
+    if( failed ) {
+      AddLogLineAbst( "RET: could not extract CID");
+      return false;
+    }
+    if (strcmp( "hex", encoding) != 0 ){
+      AddLogLineAbst( "RET: unsupported encoding %s", encoding);
+      return false;
+    }
+    if( strcmp( challengedCID, cidBuffer ) != 0 ){
+      AddLogLineAbst( "RET: wrong CID - exp: %s deliviered: %s ", challengedCID, cidBuffer);
+      return false;
+    }
+    const uint8_t* contentBytes = fromHexString(dataBuffer);
+    AddLogLineAbst( "RET: %s", jsonResponse);
+    bool PoPSuccess = verifyCIDIntegrity( cidBuffer, contentBytes);
+
+    //send out pop result to network
+    int resultPoPResult = bind_planetmintgo_dao_msgReport_to_anyMsg( anyMsg, PoPSuccess, sdk_address);
+    if( resultPoPResult >= 0 )
+      sendMessages(&anyMsg);
+    else
+      AddLogLineAbst( "RET: PoP unable to create PoPResult: %i", resultPoPResult);
+
+    if( !PoPSuccess ){
+      AddLogLineAbst( "RET: CID verification failed: %s - %s ", cidBuffer, contentBytes);
+      return false;
+    }
+    AddLogLineAbst( "RET: PoP successfully passed");
+    return true;
+}
 
 // #ifndef LINUX_MACHINE
 // extern void MqttSubscribe(const char *topic);

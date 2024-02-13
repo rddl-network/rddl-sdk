@@ -52,16 +52,6 @@ extern char challengedCID[ 64 ];
 
 extern uint32_t num_of_cid_files;
 
-typedef struct PoPInfo {
-    int64_t blockHeight;
-    char initiator[64];
-    char challenger[64];
-    char challengee[64];
-    bool finished;
-} PoPInfo;
-
-extern PoPInfo popParticipation;
-
 
 void resetPopInfo();
 bool hasMachineBeenAttested();

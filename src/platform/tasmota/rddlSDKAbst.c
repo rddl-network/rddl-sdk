@@ -59,7 +59,6 @@ char responseArr[4096];
 uint32_t num_of_cid_files = 0;
 
 
-PoPInfo popParticipation;
 void resetPopInfo(){  memset( &popParticipation, 0, sizeof(PoPInfo)); }
 
 bool hasMachineBeenAttested() {

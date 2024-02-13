@@ -17,7 +17,6 @@ bool getPoPInfoFromJSON( const char* json);
 bool convertStringToInt64( const char* valueString, int64_t* targetValue );
 void checkNumOfCIDFiles(const char* path);
 int GetRandomElementFromCIDJSONList(const char* json, char* cidBuffer, size_t bufferSize) ;
-int CreatePoPResult( void* anyMsg, bool PoPSuccess );
 
 #ifdef __cplusplus
 }
