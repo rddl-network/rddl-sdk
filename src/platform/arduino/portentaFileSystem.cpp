@@ -12,9 +12,10 @@ LittleFS_MBED *myFS = nullptr;
 uint32_t FILE_SIZE_KB = 64;
 
 
-size_t portentaReadFile(const char * path, uint8_t* content, uint32_t len)
+size_t portentaReadFile(const char * filename, uint8_t* content, uint32_t len)
 {
-    FILE *file = fopen(path, "r");
+    String path = String(MBED_LITTLEFS_FILE_PREFIX) + "/" + filename;
+    FILE *file = fopen(path.c_str(), "r");
 
     if (!file)
     {
@@ -31,10 +32,11 @@ size_t portentaReadFile(const char * path, uint8_t* content, uint32_t len)
 }
 
 
-bool portentaWriteFile(const char * path, const char * message, size_t messageSize)
+bool portentaWriteFile(const char * filename, uint8_t * message, size_t messageSize)
 {
     bool ret = true;
-    FILE *file = fopen(path, "w");
+    String path = String(MBED_LITTLEFS_FILE_PREFIX) + "/" + filename;
+    FILE *file = fopen(path.c_str(), "w");
 
     if (!file)
     {
@@ -56,9 +58,11 @@ bool portentaWriteFile(const char * path, const char * message, size_t messageSi
 }
 
 
-void portentaDeleteFile(const char * path)
+void portentaDeleteFile(const char * filename)
 {
-  if (remove(path) != 0)
+  String path = String(MBED_LITTLEFS_FILE_PREFIX) + "/" + filename;
+
+  if (remove(path.c_str()) != 0)
   {
     Serial.print(path);
     Serial.println(" => Failed");
@@ -67,8 +71,14 @@ void portentaDeleteFile(const char * path)
 }
 
 
-void portentaInitFS(){
 
+bool portentaCheckFS(){
+    return (myFS != nullptr);
+}
+
+
+void portentaInitFS(){
+  
 #if defined(LFS_MBED_PORTENTA_H7_VERSION_MIN)
 
   if (LFS_MBED_PORTENTA_H7_VERSION_INT < LFS_MBED_PORTENTA_H7_VERSION_MIN)
@@ -89,7 +99,3 @@ void portentaInitFS(){
   }
 }
 
-
-bool portentaCheckFS(){
-    return (myFS != nullptr);
-}
