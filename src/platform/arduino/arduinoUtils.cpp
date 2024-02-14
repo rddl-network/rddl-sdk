@@ -4,6 +4,10 @@ extern "C" {
   #include "arduinoUtils.h"
 }
 
+extern size_t portentaReadFile(const char * path, uint8_t* content, uint32_t len);
+extern bool portentaWriteFile(const char * path, const char * message, size_t messageSize);
+extern void portentaInitFS();
+extern bool portentaCheckFS();
 
 
 int arduinoSerialPrint(const char* msg){
@@ -35,4 +39,20 @@ bool getAccountInfoArduino( const char* account_address, uint64_t* account_id, u
   // }
 
   // return ret;
+}
+
+
+bool rddlWritefileTasmota( const char* filename, uint8_t* content, size_t length) {
+  if(!portentaCheckFs())
+    portentaInitFS();
+
+  return portentaWriteFile(filename, content, length);
+}
+
+
+int readfileTasmota( const char* filename, uint8_t* content, size_t length){
+  if(!portentaCheckFs())
+    portentaInitFS();
+
+  return portentaReadFile(filename, (uint8_t*)content, length);
 }

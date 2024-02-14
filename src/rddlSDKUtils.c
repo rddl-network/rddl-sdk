@@ -8,6 +8,7 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <limits.h>
 
 #include "rddl.h"
 #include "rddl_cid.h"
@@ -162,22 +163,22 @@ bool getPlntmntKeys(){
 }
 
 
-// void signRDDLNetworkMessageContent( const char* data_str, size_t data_length, char* sig_out){
-//   char pubkey_out[66+1] = {0};
-//   char hash_out[64+1] = {0};
-//   if( readSeed() != NULL )
-//   {
-//     SignDataHash( data_str, data_length,  pubkey_out, sig_out, hash_out);
-//   }
+void signRDDLNetworkMessageContent( const char* data_str, size_t data_length, char* sig_out){
+  char pubkey_out[66+1] = {0};
+  char hash_out[64+1] = {0};
+  if( readSeed() != NULL )
+  {
+    SignDataHash( data_str, data_length,  pubkey_out, sig_out, hash_out);
+  }
 
-//   /* Bunlar PlatformIO Specific */
-//   sprintf(responseArr, PSTR(",\"%s\":\"%s\"\n"), "Hash", hash_out);
-//   AddLogLineAbst(responseArr);
-//   sprintf(responseArr, PSTR(",\"%s\":\"%s\"\n"), "Signature", sig_out);
-//   AddLogLineAbst(responseArr);
-//   sprintf(responseArr, PSTR(",\"%s\":\"%s\"\n"), "PublicKey", pubkey_out);
-//   AddLogLineAbst(responseArr);
-// }
+  /* Bunlar PlatformIO Specific */
+  sprintf(responseArr, PSTR(",\"%s\":\"%s\"\n"), "Hash", hash_out);
+  AddLogLineAbst(responseArr);
+  sprintf(responseArr, PSTR(",\"%s\":\"%s\"\n"), "Signature", sig_out);
+  AddLogLineAbst(responseArr);
+  sprintf(responseArr, PSTR(",\"%s\":\"%s\"\n"), "PublicKey", pubkey_out);
+  AddLogLineAbst(responseArr);
+}
 
 
 int registerMachine(void* anyMsg, const char* machineCategory, const char* manufacturer, const char* cid){
@@ -270,154 +271,154 @@ int copyJsonValueString(char *buffer, size_t buffer_len, const char *json, const
 
 
 
-// int parseJsonBoolean(const char *json, const char *key, bool *result) {
-//     char key_pattern[100]; // Adjust size as needed
-//     sprintf(key_pattern, "\"%s\": ", key);
+int parseJsonBoolean(const char *json, const char *key, bool *result) {
+    char key_pattern[100]; // Adjust size as needed
+    sprintf(key_pattern, "\"%s\": ", key);
 
-//     char *key_ptr = strstr(json, key_pattern);
-//     if (key_ptr == NULL) {
-//       sprintf(key_pattern, "\"%s\":", key);
-//       key_ptr = strstr(json, key_pattern);
-//       if (key_ptr == NULL) {
-//         return -1; // Key not found
-//       }
-//     }
+    char *key_ptr = strstr(json, key_pattern);
+    if (key_ptr == NULL) {
+      sprintf(key_pattern, "\"%s\":", key);
+      key_ptr = strstr(json, key_pattern);
+      if (key_ptr == NULL) {
+        return -1; // Key not found
+      }
+    }
 
-//     key_ptr += strlen(key_pattern); // Move to value position
+    key_ptr += strlen(key_pattern); // Move to value position
 
-//     if (strncmp(key_ptr, "true", 4) == 0) {
-//         *result = true;
-//         return 0;
-//     } else if (strncmp(key_ptr, "false", 5) == 0) {
-//         *result = false;
-//         return 0;
-//     }
+    if (strncmp(key_ptr, "true", 4) == 0) {
+        *result = true;
+        return 0;
+    } else if (strncmp(key_ptr, "false", 5) == 0) {
+        *result = false;
+        return 0;
+    }
 
-//     return -2; // Invalid boolean value
-// }
+    return -2; // Invalid boolean value
+}
 
-// bool convertStringToInt64( const char* valueString, int64_t* targetValue ){
+bool convertStringToInt64( const char* valueString, int64_t* targetValue ){
 
-//   char* endptr;
-//   errno = 0;
-//   *targetValue = strtoll(valueString, &endptr, 10); // Convert string to int64_t
+  char* endptr;
+  errno = 0;
+  *targetValue = strtoll(valueString, &endptr, 10); // Convert string to int64_t
 
-//   // Check for various possible errors
-//   if ((errno == ERANGE && (*targetValue == LLONG_MAX || *targetValue == LLONG_MIN)) || (errno != 0 && *targetValue == 0)) {
-//       perror("Conversion error");
-//       return false;
-//   }
-//   if (endptr == valueString) {
-//       fprintf(stderr, "No digits were found\n");
-//       return false;
-//   }
-//   return true;
-// }
+  // Check for various possible errors
+  if ((errno == ERANGE && (*targetValue == LLONG_MAX || *targetValue == LLONG_MIN)) || (errno != 0 && *targetValue == 0)) {
+      perror("Conversion error");
+      return false;
+  }
+  if (endptr == valueString) {
+      fprintf(stderr, "No digits were found\n");
+      return false;
+  }
+  return true;
+}
 
-// bool getPoPInfoFromJSON( const char* json){
-//   AddLogLineAbst( "PoPInfo: %s", json );
-//   resetPopInfo();
+bool getPoPInfoFromJSON( const char* json){
+  AddLogLineAbst( "PoPInfo: %s", json );
+  resetPopInfo();
 
-//   int result = copyJsonValueString( popParticipation.initiator, sizeof(popParticipation.initiator), json, "initiator");
-//   if( result ){
-//     resetPopInfo();
-//     return false;
-//   }
-//   result = copyJsonValueString( popParticipation.challenger, sizeof(popParticipation.challenger), json, "challenger");
-//   if( result ){
-//     resetPopInfo();
-//     return false;
-//   }
-//   result = copyJsonValueString( popParticipation.challengee, sizeof(popParticipation.challengee), json, "challengee");
-//   if( result ){
-//     resetPopInfo();
-//     return false;
-//   }
+  int result = copyJsonValueString( popParticipation.initiator, sizeof(popParticipation.initiator), json, "initiator");
+  if( result ){
+    resetPopInfo();
+    return false;
+  }
+  result = copyJsonValueString( popParticipation.challenger, sizeof(popParticipation.challenger), json, "challenger");
+  if( result ){
+    resetPopInfo();
+    return false;
+  }
+  result = copyJsonValueString( popParticipation.challengee, sizeof(popParticipation.challengee), json, "challengee");
+  if( result ){
+    resetPopInfo();
+    return false;
+  }
 
 
-//   char blockHeight[30] = {0};
-//   result = copyJsonValueString( blockHeight, sizeof(blockHeight), json, "height");
-//   if( result ){
-//     resetPopInfo();
-//     return false;
-//   }
-//   result = convertStringToInt64( blockHeight, &popParticipation.blockHeight);
-//   if( !result ){
-//     resetPopInfo();
-//     return false;
-//   }
+  char blockHeight[30] = {0};
+  result = copyJsonValueString( blockHeight, sizeof(blockHeight), json, "height");
+  if( result ){
+    resetPopInfo();
+    return false;
+  }
+  result = convertStringToInt64( blockHeight, &popParticipation.blockHeight);
+  if( !result ){
+    resetPopInfo();
+    return false;
+  }
   
-//   result = parseJsonBoolean(json, "finished", &popParticipation.finished);
-//   if( result ){
-//     resetPopInfo();
-//     return false;
-//   }
+  result = parseJsonBoolean(json, "finished", &popParticipation.finished);
+  if( result ){
+    resetPopInfo();
+    return false;
+  }
   
-//   return true;
-// }
+  return true;
+}
 
 
-// void checkNumOfCIDFiles(const char* path){
-//   if(num_of_cid_files == 0)
-//     num_of_cid_files = abstGetNumOfCIDFiles(path);
-//   else
-//     num_of_cid_files++;
+void checkNumOfCIDFiles(const char* path){
+  if(num_of_cid_files == 0)
+    num_of_cid_files = abstGetNumOfCIDFiles(path);
+  else
+    num_of_cid_files++;
   
-//   if(abstDeleteOldestCIDFile(path) == 0)
-//     num_of_cid_files--;
-// }
+  if(abstDeleteOldestCIDFile(path) == 0)
+    num_of_cid_files--;
+}
 
 
-// // Function to count the number of elements in the "cids" array
-// int countElements(const char* start, const char* end) {
-//     int count = 0;
-//     const char* temp = start;
-//     while (temp < end && (temp = strstr(temp, "\"b"))) {
-//         count++;
-//         temp++;
-//     }
-//     return count;
-// }
-// #define MIN(x, y) (((x) < (y)) ? (x) : (y))
-// // Function to extract the nth element from the "cids" array
-// void extractElement(const char* start, int index, char* result, size_t resultBufferSize) {
-//     const char* temp = start;
-//     for (int i = 0; i <= index; ++i) {
-//         temp = strstr(temp, "\"b");
-//         temp++;
-//     }
-//     // Assuming each element is not longer than 100 characters
-//     strncpy(result, temp, MIN( resultBufferSize, strlen(temp)) );
-//     char* endOfElement = strchr(result, '\"');
-//     if (endOfElement) 
-//       *endOfElement = '\0';
-//     else
-//       result[resultBufferSize-1] = '\0';
+// Function to count the number of elements in the "cids" array
+int countElements(const char* start, const char* end) {
+    int count = 0;
+    const char* temp = start;
+    while (temp < end && (temp = strstr(temp, "\"b"))) {
+        count++;
+        temp++;
+    }
+    return count;
+}
+#define MIN(x, y) (((x) < (y)) ? (x) : (y))
+// Function to extract the nth element from the "cids" array
+void extractElement(const char* start, int index, char* result, size_t resultBufferSize) {
+    const char* temp = start;
+    for (int i = 0; i <= index; ++i) {
+        temp = strstr(temp, "\"b");
+        temp++;
+    }
+    // Assuming each element is not longer than 100 characters
+    strncpy(result, temp, MIN( resultBufferSize, strlen(temp)) );
+    char* endOfElement = strchr(result, '\"');
+    if (endOfElement) 
+      *endOfElement = '\0';
+    else
+      result[resultBufferSize-1] = '\0';
 
-// }
+}
 
-// int GetRandomElementFromCIDJSONList(const char* json, char* cidBuffer, size_t bufferSize ) {    
-//     // Find the start and end of the "cids" array
-//     const char* start = strstr(json, "[");
-//     const char* end = strstr(json, "]");
+int GetRandomElementFromCIDJSONList(const char* json, char* cidBuffer, size_t bufferSize ) {    
+    // Find the start and end of the "cids" array
+    const char* start = strstr(json, "[");
+    const char* end = strstr(json, "]");
        
-//     if (start && end) {
-//         int count = countElements(start, end);
-//         unsigned int randomValue;
-//         int randomIndex;
-// #ifdef LINUX_MACHINE
-//         getrandom(&randomValue, sizeof(randomValue), 0);
-// #else
-//         esp_fill_random( &randomValue, sizeof(randomValue));
-//         randomValue = (unsigned int) random();
-// #endif
-//         randomIndex = randomValue % count;
-//         extractElement(start, randomIndex, cidBuffer, bufferSize);
+    if (start && end) {
+        int count = countElements(start, end);
+        unsigned int randomValue;
+        int randomIndex;
+#ifdef LINUX_MACHINE
+        getrandom(&randomValue, sizeof(randomValue), 0);
+#else
+        esp_fill_random( &randomValue, sizeof(randomValue));
+        randomValue = (unsigned int) random();
+#endif
+        randomIndex = randomValue % count;
+        extractElement(start, randomIndex, cidBuffer, bufferSize);
 
-//         printf("Random Element: %u %s\n",randomIndex, cidBuffer);
-//         return randomIndex;
-//     } else {
-//         printf("Error parsing JSON string.\n");
-//     }
-//     return -1;
-// }
+        printf("Random Element: %u %s\n",randomIndex, cidBuffer);
+        return randomIndex;
+    } else {
+        printf("Error parsing JSON string.\n");
+    }
+    return -1;
+}

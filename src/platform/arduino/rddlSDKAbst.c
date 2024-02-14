@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "rddl.h"
 #include "rddlSDKAbst.h"
 #include "rddlSDKSettings.h"
 #include "rddlSDKUtils.h"
@@ -48,13 +49,16 @@ bool hasMachineBeenAttested() {
 
 
 bool rddl_writefile( const char* filename, uint8_t* content, size_t length) {
-  
-  return true;
+  bool status = rddlWritefileArduino(filename, content, length);
+
+  return status;
 }
 
 
 int readfile( const char* filename, uint8_t* content, size_t length){
-  return 0;
+  bool status = readfileArduino(filename, content, length);
+
+  return (status) ? length : 0;
 }
 
 
