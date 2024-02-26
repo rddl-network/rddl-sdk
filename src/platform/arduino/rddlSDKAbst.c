@@ -42,9 +42,7 @@ void resetPopInfo(){  memset( &popParticipation, 0, sizeof(PoPInfo)); }
 
 
 bool hasMachineBeenAttested() {
-
-  bool status = false;
-  return status;
+  return hasMachineBeenAttestedArduino((const char*)sdk_ext_pub_key_planetmint, getSetting( SDK_SET_PLANETMINT_API) );
 }
 
 
@@ -92,7 +90,7 @@ void abstClearStack() {
 
 bool getAccountInfo( uint64_t* account_id, uint64_t* sequence )
 {
-  bool ret = getAccountInfoArduino(sdk_address, account_id, sequence);
+  bool ret = getAccountInfoArduino(sdk_address, account_id, sequence, getSetting(SDK_SET_PLANETMINT_API));
   if( !ret ){
     sprintf(responseArr, "Account parsing issue\n");
     AddLogLineAbst(responseArr);
@@ -102,53 +100,76 @@ bool getAccountInfo( uint64_t* account_id, uint64_t* sequence )
 }
 
 
-
-
-
 bool getPoPInfo( const char* blockHeight){
-
-
-  return true;
+  return getPoPInfoArduino(blockHeight, getSetting(SDK_SET_PLANETMINT_API));
 }
 
 int broadcast_transaction( char* tx_payload ){
-  
-  return 0;
+  char http_answr[512];
+  int status = broadcastTransactionArduino(tx_payload, http_answr, getSetting(SDK_SET_PLANETMINT_API));
+
+  sprintf(responseArr, PSTR(",\"%s\":\"%u\"\n"), "respose code", status);
+  AddLogLineAbst(responseArr);
+  sprintf(responseArr, PSTR(",\"%s\":\"%s\"\n"), "respose string", http_answr);
+  AddLogLineAbst(responseArr);
+
+  return status;
 }
 
 
 char* getSetting(uint32_t index){
   switch(index) {
-case SDK_SET_NOTARIZTATION_PERIODICITY:
-    if( strlen( sdk_periodicity) == 0 ){
-      if( !readfile(SETTINGS_PERIODICITY_FILE, (uint8_t*)sdk_periodicity, 20) )
-        strcpy(sdk_periodicity, DEFAULT_PERIODICITY_TEXT);
-    }
-    return sdk_periodicity;
-case SDK_SET_PLANETMINT_API:
-    if( strlen( sdk_planetmintapi) == 0 ){
-      if( !readfile(SETTINGS_API_FILE, (uint8_t*)sdk_planetmintapi, 100) )
-        strcpy(sdk_planetmintapi, DEFAULT_API_TEXT);
-    }
-    return sdk_planetmintapi;
-case SDK_SET_PLANETMINT_CHAINID:
-    if( strlen( sdk_chainid) == 0 ){
-      if( !readfile(SETTINGS_CHAINID_FILE, (uint8_t*)sdk_chainid, 30) )
-        strcpy(sdk_chainid, DEFAULT_API_TEXT);
-    }
-    return sdk_chainid;
-case SDK_SET_PLANETMINT_DENOM:
-    if( strlen( sdk_denom) == 0 )
-      if( !readfile(SETTINGS_DENOM_FILE, (uint8_t*)sdk_chainid, 20) )
-        strcpy(sdk_denom, DEFAULT_DENOM_TEXT);
-    return sdk_denom;
-default:
-    return NULL;
+  case SDK_SET_NOTARIZTATION_PERIODICITY:
+      if( strlen( sdk_periodicity) == 0 ){
+        if( !readfile(SETTINGS_PERIODICITY_FILE, (uint8_t*)sdk_periodicity, 20) )
+          strcpy(sdk_periodicity, DEFAULT_PERIODICITY_TEXT);
+      }
+      return sdk_periodicity;
+  case SDK_SET_PLANETMINT_API:
+      if( strlen( sdk_planetmintapi) == 0 ){
+        if( !readfile(SETTINGS_API_FILE, (uint8_t*)sdk_planetmintapi, 100) )
+          strcpy(sdk_planetmintapi, DEFAULT_API_TEXT);
+      }
+      return sdk_planetmintapi;
+  case SDK_SET_PLANETMINT_CHAINID:
+      if( strlen( sdk_chainid) == 0 ){
+        if( !readfile(SETTINGS_CHAINID_FILE, (uint8_t*)sdk_chainid, 30) )
+          strcpy(sdk_chainid, DEFAULT_CHAINID_TEXT);
+      }
+      return sdk_chainid;
+  case SDK_SET_PLANETMINT_DENOM:
+      if( strlen( sdk_denom) == 0 )
+        if( !readfile(SETTINGS_DENOM_FILE, (uint8_t*)sdk_denom, 20) )
+          strcpy(sdk_denom, DEFAULT_DENOM_TEXT);
+      return sdk_denom;
+  default:
+      return NULL;
   }
 }
 
 bool setSetting(uint32_t index, const char* replacementText){
-  return false;
+  bool retValue = false;
+  switch(index) {
+  case SDK_SET_NOTARIZTATION_PERIODICITY:
+      retValue = rddl_writefile( SETTINGS_PERIODICITY_FILE, (uint8_t*)replacementText, strlen(replacementText));
+      memset(sdk_periodicity,0,20);
+      break;  
+  case SDK_SET_PLANETMINT_API:   
+      retValue = rddl_writefile( SETTINGS_API_FILE, (uint8_t*)replacementText, strlen(replacementText));
+      memset(sdk_planetmintapi,0,100);
+      break;  
+  case SDK_SET_PLANETMINT_CHAINID:
+      retValue = rddl_writefile( SETTINGS_CHAINID_FILE, (uint8_t*)replacementText, strlen(replacementText));
+      memset(sdk_chainid,0,30);
+      break;  
+  case SDK_SET_PLANETMINT_DENOM:
+      retValue = rddl_writefile( SETTINGS_DENOM_FILE, (uint8_t*)replacementText, strlen(replacementText));
+      memset(sdk_denom,0,20);
+      break;  
+  default:
+      retValue =  false;
+  }
+  return retValue;
 }
 
 
@@ -157,7 +178,11 @@ char* getCIDsLinux( const char* address ){
 }
 
 char* getCIDtoBeChallenged(){
-  return NULL;
+  clearStack();
+  char* jsonObject = getCIDsArduino( (const char*)popParticipation.challengee, getSetting(SDK_SET_PLANETMINT_API) );
+  if (GetRandomElementFromCIDJSONList(jsonObject, challengedCID, 64) < 0)
+    return NULL;
+  return challengedCID;
 }
 
 int abstGetNumOfCIDFiles(const char* path){

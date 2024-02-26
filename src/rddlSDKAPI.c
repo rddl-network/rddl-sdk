@@ -25,13 +25,13 @@ const uint8_t* sdkGetPrivKeyPlanetmint() { return (const uint8_t*)sdk_priv_key_p
 const char* sdkGetMachinePublicKey()     { return (const char*) sdk_machineid_public_key_hex; }
 bool  sdkGetPlntmntKeys(){ return getPlntmntKeys(); }
 
-// int sdkReadFile( const char* filename, uint8_t* content, size_t length){
-//   return readfile(filename, content, length);
-// }
+int sdkReadFile( const char* filename, uint8_t* content, size_t length){
+  return readfile(filename, content, length);
+}
 
-// bool sdkGetAccountInfo( uint64_t* account_id, uint64_t* sequence ){
-//   return getAccountInfo( account_id, sequence );
-// }
+bool sdkGetAccountInfo( uint64_t* account_id, uint64_t* sequence ){
+  return getAccountInfo( account_id, sequence );
+}
 
 // char* sdkGetSetting( uint32_t index ){
 //   return getSetting(index);
@@ -241,6 +241,6 @@ bool processPoPChallengeResponse( const char* jsonResponse, size_t length){
 // }
 // #endif
 
-// char* getCIDofChallengee(){
-//   return getCIDtoBeChallenged();
-// }
+char* getCIDofChallengee(){
+  return getCIDtoBeChallenged();
+}

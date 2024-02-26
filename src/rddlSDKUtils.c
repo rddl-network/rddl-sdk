@@ -230,9 +230,9 @@ int sendMessages( void* pAnyMsg) {
     return -1;
   sprintf(responseArr, "TX broadcast:\n");
   AddLogLineAbst(responseArr);
-  // int broadcast_return = broadcast_transaction( tx_payload );
+  int broadcast_return = broadcast_transaction( tx_payload );
 
-  // return broadcast_return;
+  return broadcast_return;
 }
 
 

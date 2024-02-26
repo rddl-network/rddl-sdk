@@ -15,7 +15,10 @@ uint32_t FILE_SIZE_KB = 64;
 size_t portentaReadFile(const char * filename, uint8_t* content, uint32_t len)
 {
     String path = String(MBED_LITTLEFS_FILE_PREFIX) + "/" + filename;
+
     FILE *file = fopen(path.c_str(), "r");
+    Serial.print("Reading File ");
+    Serial.println(path);
 
     if (!file)
     {
@@ -30,13 +33,18 @@ size_t portentaReadFile(const char * filename, uint8_t* content, uint32_t len)
 
     return numRead;
 }
-
+ 
 
 bool portentaWriteFile(const char * filename, uint8_t * message, size_t messageSize)
 {
     bool ret = true;
+
     String path = String(MBED_LITTLEFS_FILE_PREFIX) + "/" + filename;
+
     FILE *file = fopen(path.c_str(), "w");
+
+    Serial.print("Writing File ");
+    Serial.println(path);
 
     if (!file)
     {
@@ -78,6 +86,7 @@ bool portentaCheckFS(){
 
 
 void portentaInitFS(){
+
   
 #if defined(LFS_MBED_PORTENTA_H7_VERSION_MIN)
 
@@ -88,6 +97,8 @@ void portentaInitFS(){
   }
 
 #endif
+
+  Serial.println("Init File System");
 
   myFS = new LittleFS_MBED();
 
