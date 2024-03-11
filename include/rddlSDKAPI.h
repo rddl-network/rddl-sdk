@@ -20,6 +20,7 @@ void sdkStoreSeed(char* new_seed);
 uint8_t* sdkReadSeed(char* seed_arr, int* seed_size);
 
 int sdkReadFile( const char* filename, uint8_t* content, size_t length);
+int sdkWriteFile( const char* filename, uint8_t* content, size_t length);
 bool sdkGetAccountInfo( uint64_t* account_id, uint64_t* sequence );
 
 char* sdkGetSetting(uint32_t index);

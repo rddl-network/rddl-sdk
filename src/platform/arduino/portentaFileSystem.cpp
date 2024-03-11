@@ -66,20 +66,6 @@ bool portentaWriteFile(const char * filename, uint8_t * message, size_t messageS
 }
 
 
-void portentaDeleteFile(const char * filename)
-{
-  String path = String(MBED_LITTLEFS_FILE_PREFIX) + "/" + filename;
-
-  if (remove(path.c_str()) != 0)
-  {
-    Serial.print(path);
-    Serial.println(" => Failed");
-    return;
-  }
-}
-
-
-
 bool portentaCheckFS(){
     return (myFS != nullptr);
 }
@@ -110,3 +96,18 @@ void portentaInitFS(){
   }
 }
 
+
+void portentaDeleteFile(const char * filename)
+{
+  if(!portentaCheckFS())
+    portentaInitFS();
+
+  String path = String(MBED_LITTLEFS_FILE_PREFIX) + "/" + filename;
+
+  if (remove(path.c_str()) != 0)
+  {
+    Serial.print(path);
+    Serial.println(" => Failed");
+    return;
+  }
+}

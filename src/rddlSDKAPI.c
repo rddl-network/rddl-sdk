@@ -29,6 +29,10 @@ int sdkReadFile( const char* filename, uint8_t* content, size_t length){
   return readfile(filename, content, length);
 }
 
+int sdkWriteFile( const char* filename, uint8_t* content, size_t length){
+  return rddl_writefile(filename, content, length);
+}
+
 bool sdkGetAccountInfo( uint64_t* account_id, uint64_t* sequence ){
   return getAccountInfo( account_id, sequence );
 }
