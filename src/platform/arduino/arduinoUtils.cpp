@@ -18,8 +18,8 @@ extern bool portentaWriteFile(const char * path, uint8_t * message, size_t messa
 extern void portentaInitFS();
 extern bool portentaCheckFS();
 
-std::pair<int, String> sendHttpsGetRequest(const char* urlPath, const header_vector& headers);
-std::pair<int, String> sendHttpsPostRequest(const char* urlPath, const header_vector& headers, const uint8_t* tx_payload, size_t tx_size);
+std::pair<int, String> sendHttpsGetRequest(const char* domainUrl, const char* urlPath, const header_vector& headers);
+std::pair<int, String> sendHttpsPostRequest(const char* domainUrl, const char* urlPath, const header_vector& headers, const uint8_t* tx_payload, size_t tx_size);
 
 int arduinoSerialPrint(const char* msg){
   return Serial.print(msg);
@@ -27,28 +27,29 @@ int arduinoSerialPrint(const char* msg){
 
 
 bool hasMachineBeenAttestedArduino(const char* g_ext_pub_key_planetmint, const char* api_url) {
-  String uri{api_url};
+  String uri{};
   uri += "/planetmint/machine/get_machine_by_public_key/";
   uri += g_ext_pub_key_planetmint;
 
   header_vector headers;
   headers.push_back(std::make_pair(String{"Content-Type"}, String{"application/json"}));
 
-  auto response = sendHttpsGetRequest(uri.c_str(), headers);
-
-  return response.first == 200;
+  auto response = sendHttpsGetRequest(api_url, uri.c_str(), headers);
+  Serial.print("Response Code: ");
+  Serial.println(response.first);
+  return response.first == 200; 
 }
 
 
 int broadcastTransactionArduino( char* tx_payload, char *http_answ, const char* api_url){
-  String uri{api_url};
+  String uri{};
   uri += "/cosmos/tx/v1beta1/txs";
 
   header_vector headers;
   headers.push_back(std::make_pair(String{"accept"},       String{"application/json"}));
   headers.push_back(std::make_pair(String{"Content-Type"}, String{"application/json"}));
 
-  auto response = sendHttpsPostRequest(uri.c_str(), headers, (const uint8_t*)tx_payload, strlen(tx_payload));
+  auto response = sendHttpsPostRequest(api_url, uri.c_str(), headers, (const uint8_t*)tx_payload, strlen(tx_payload));
   
   strcpy(http_answ, response.second.c_str());
   return response.first;
@@ -57,14 +58,14 @@ int broadcastTransactionArduino( char* tx_payload, char *http_answ, const char* 
 
 bool getAccountInfoArduino( const char* account_address, uint64_t* account_id, uint64_t* sequence, const char* api_url )
 {
-  String uri{api_url};
+  String uri{};
   uri += "/cosmos/auth/v1beta1/account_info/";
   uri += account_address;
 
   header_vector headers;
   headers.push_back(std::make_pair(String("Content-Type"), String("application/json")));
 
-  auto response = sendHttpsGetRequest(uri.c_str(), headers);
+  auto response = sendHttpsGetRequest(api_url, uri.c_str(), headers);
   int _account_id = 0;
   int _sequence = 0;
 
@@ -80,20 +81,20 @@ bool getAccountInfoArduino( const char* account_address, uint64_t* account_id, u
 
 
 bool getPoPInfoArduino( const char* blockHeight, const char* api_url){
-  String uri{api_url};
+  String uri{};
   uri += "/planetmint/planetmint-go/dao/get_challenge/";
   uri += blockHeight;
 
   header_vector headers;
   headers.push_back(std::make_pair(String{"Content-Type"}, String{"application/json"}));
 
-  auto response = sendHttpsGetRequest(uri.c_str(), headers);
+  auto response = sendHttpsGetRequest(api_url, uri.c_str(), headers);
   return getPoPInfoFromJSON( response.second.c_str() );
 }
 
 
 char* getCIDsArduino( const char* address,  const char* api_url){
-  String uri{api_url};
+  String uri{};
   uri += "planetmint/asset/get_cids_by_address";
   uri += address;
   uri += "2000";
@@ -101,7 +102,7 @@ char* getCIDsArduino( const char* address,  const char* api_url){
   header_vector headers;
   headers.push_back(std::make_pair(String{"Content-Type"}, String{"application/json"}));
 
-  auto response = sendHttpsGetRequest(uri.c_str(), headers);
+  auto response = sendHttpsGetRequest(api_url, uri.c_str(), headers);
 
   if(response.first != 200)
     return NULL;
@@ -128,16 +129,17 @@ int readfileArduino( const char* filename, uint8_t* content, size_t length){
   return portentaReadFile(filename, (uint8_t*)content, length);
 }
 
-
-std::pair<int, String> sendHttpsGetRequest(const char* urlPath, const header_vector& headers)
+ 
+std::pair<int, String> sendHttpsGetRequest(const char* domainUrl, const char* urlPath, const header_vector& headers)
 {
   WiFiClient Client;
   BearSSLClient sslClient(Client);
 
   Serial.println("Sending HTTPS GET request to...");
+  Serial.print(domainUrl);
   Serial.println(urlPath);
 
-  if (!sslClient.connect("testnet-api.rddl.io", 443)) {
+  if (!sslClient.connect(domainUrl, 443)) {
       Serial.println("Connection failed!");
       return {0, ""}; // Return an empty response with status code 0
   }
@@ -146,7 +148,9 @@ std::pair<int, String> sendHttpsGetRequest(const char* urlPath, const header_vec
   sslClient.print("GET ");
   sslClient.print(urlPath);
   sslClient.print(" HTTP/1.1\r\n");
-  sslClient.print("Host: testnet-api.rddl.io\r\n");
+  sslClient.print("Host: ");
+  sslClient.print(domainUrl);
+  sslClient.print("\r\n");
 
   // Include additional headers
   for (const auto& header : headers) {
@@ -191,7 +195,7 @@ std::pair<int, String> sendHttpsGetRequest(const char* urlPath, const header_vec
 }
 
 
-std::pair<int, String> sendHttpsPostRequest(const char* urlPath, const header_vector& headers, const uint8_t* tx_payload, size_t tx_size)
+std::pair<int, String> sendHttpsPostRequest(const char* domainUrl, const char* urlPath, const header_vector& headers, const uint8_t* tx_payload, size_t tx_size)
 {
   WiFiClient Client;
   BearSSLClient sslClient(Client);
@@ -199,7 +203,7 @@ std::pair<int, String> sendHttpsPostRequest(const char* urlPath, const header_ve
     Serial.println("Sending HTTPS POST request...");
     Serial.println(urlPath);
 
-    if (!sslClient.connect("testnet-api.rddl.io", 443)) {
+    if (!sslClient.connect(domainUrl, 443)) {
         Serial.println("Connection failed!");
         return {0, ""}; // Return an empty response with status code 0
     }
@@ -208,7 +212,9 @@ std::pair<int, String> sendHttpsPostRequest(const char* urlPath, const header_ve
     sslClient.print("POST ");
     sslClient.print(urlPath);
     sslClient.print(" HTTP/1.1\r\n");
-    sslClient.print("Host: testnet-api.rddl.io\r\n");
+    sslClient.print("Host: ");
+    sslClient.print(domainUrl);
+    sslClient.print("\r\n");
 
     // Include additional headers
     for (const auto& header : headers) {
