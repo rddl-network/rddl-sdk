@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <ArduinoBearSSL.h>
 #include <ArduinoECCX08.h>
+#include <Arduino_UnifiedStorage.h>
 #include <WiFi.h>
 #include <vector>
 #include <utility>
@@ -13,12 +14,7 @@ extern "C" {
 
 using header_vector = std::vector<std::pair<String, String>>;
 
-extern size_t portentaReadFile(const char * path, uint8_t* content, uint32_t len);
-extern bool portentaWriteFile(const char * path, uint8_t * message, size_t messageSize);
-extern void portentaInitFS();
-extern bool portentaCheckFS();
-
-std::pair<int, String> sendHttpsGetRequest(const char* domainUrl, const char* urlPath, const header_vector& headers);
+std::pair<int, String> sendHttpsGetRequest (const char* domainUrl, const char* urlPath, const header_vector& headers);
 std::pair<int, String> sendHttpsPostRequest(const char* domainUrl, const char* urlPath, const header_vector& headers, const uint8_t* tx_payload, size_t tx_size);
 
 int arduinoSerialPrint(const char* msg){
@@ -114,19 +110,44 @@ char* getCIDsArduino( const char* address,  const char* api_url){
 }
 
 
-bool rddlWritefileArduino( const char* filename, uint8_t* content, size_t length) {
-  if(!portentaCheckFS())
-    portentaInitFS();
+bool writefileArduino( const char* filename, uint8_t* content, size_t length) {
+  InternalStorage storage;
+  storage = InternalStorage();
+  if(!storage.begin()){
+    Serial.println("Error mounting storage device.");
+    return false;
+  }
 
-  return portentaWriteFile(filename, content, length);
+  Folder root = storage.getRootFolder();
+  UFile file = root.createFile(filename, FileMode::WRITE);
+  if(!file.exists())
+    return false;
+
+  file.write(content, length);
+
+  file.close();
+  return true;
 }
 
 
 int readfileArduino( const char* filename, uint8_t* content, size_t length){
-  if(!portentaCheckFS())
-    portentaInitFS();
+  InternalStorage storage;
+  storage = InternalStorage();
+  if(!storage.begin()){
+    Serial.println("Error mounting storage device.");
+    return 0;
+  }
 
-  return portentaReadFile(filename, (uint8_t*)content, length);
+  Folder root = storage.getRootFolder();
+  UFile file = root.createFile(filename, FileMode::READ);
+  if(!file.exists())
+    return 0;
+
+  file.seek(0); // Move the file pointer to the beginning
+  int bytesRead = file.read(content, length);
+
+  file.close();
+  return bytesRead;
 }
 
  

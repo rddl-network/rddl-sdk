@@ -47,7 +47,7 @@ bool hasMachineBeenAttested() {
 
 
 bool rddl_writefile( const char* filename, uint8_t* content, size_t length) {
-  bool status = rddlWritefileArduino(filename, content, length);
+  bool status = writefileArduino(filename, content, length);
 
   return status;
 }
