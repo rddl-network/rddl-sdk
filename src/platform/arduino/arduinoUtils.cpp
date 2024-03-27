@@ -12,6 +12,8 @@ extern "C" {
   #include "arduinoUtils.h"
 }
 
+InternalStorage storage;
+
 using header_vector = std::vector<std::pair<String, String>>;
 
 std::pair<int, String> sendHttpsGetRequest (const char* domainUrl, const char* urlPath, const header_vector& headers);
@@ -110,13 +112,53 @@ char* getCIDsArduino( const char* address,  const char* api_url){
 }
 
 
-bool writefileArduino( const char* filename, uint8_t* content, size_t length) {
-  InternalStorage storage;
-  storage = InternalStorage();
-  if(!storage.begin()){
-    Serial.println("Error mounting storage device.");
-    return false;
+void initStorageArduino(){
+  static int initCnt{0};
+
+  if(!initCnt){
+    storage = InternalStorage();
+    if(!storage.begin()){
+      Serial.println("Error mounting storage device.");
+      return;
+    }
+    initCnt++;
   }
+}
+
+void printFolderContents(Folder dir, int indentation = 0) {
+  std::vector<Folder> directories = dir.getFolders();
+  std::vector<UFile> files = dir.getFiles();
+
+  // Print directories
+  for (Folder subdir : directories) {
+    for (int i = 0; i < indentation; i++) {
+      Serial.print("  ");
+    }
+    Serial.print("[D] ");
+    Serial.println(subdir.getPath());
+    printFolderContents(subdir, indentation + 1);
+  }
+
+  // Print files
+  for (UFile file : files) {
+    for (int i = 0; i < indentation; i++) {
+      Serial.print("  ");
+    }
+    Serial.print("[F] ");
+    Serial.println(file.getPath());
+  }
+}
+
+
+void printAllFSArduino(){
+  initStorageArduino();
+  
+  printFolderContents(storage.getRootFolder());
+}
+
+
+bool writefileArduino( const char* filename, uint8_t* content, size_t length) {
+  initStorageArduino();
 
   Folder root = storage.getRootFolder();
   UFile file = root.createFile(filename, FileMode::WRITE);
@@ -131,12 +173,7 @@ bool writefileArduino( const char* filename, uint8_t* content, size_t length) {
 
 
 int readfileArduino( const char* filename, uint8_t* content, size_t length){
-  InternalStorage storage;
-  storage = InternalStorage();
-  if(!storage.begin()){
-    Serial.println("Error mounting storage device.");
-    return 0;
-  }
+  initStorageArduino();
 
   Folder root = storage.getRootFolder();
   UFile file = root.createFile(filename, FileMode::READ);
