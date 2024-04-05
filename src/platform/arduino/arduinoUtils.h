@@ -7,3 +7,7 @@ bool hasMachineBeenAttestedArduino(const char* g_ext_pub_key_planetmint, const c
 int broadcastTransactionArduino( char* tx_payload, char *http_answ, const char* api_url);
 bool getPoPInfoArduino( const char* blockHeight, const char* api_url);
 char* getCIDsArduino( const char* address,  const char* api_url);
+int arduinoGetNumOfCIDFiles(const char *path);
+void arduinoGetCIDFiles(const char *path);
+void arduinoSortCIDFiles();
+int arduinoDeleteOldestCIDFiles();

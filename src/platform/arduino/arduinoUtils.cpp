@@ -18,6 +18,7 @@ using header_vector = std::vector<std::pair<String, String>>;
 
 std::pair<int, String> sendHttpsGetRequest (const char* domainUrl, const char* urlPath, const header_vector& headers);
 std::pair<int, String> sendHttpsPostRequest(const char* domainUrl, const char* urlPath, const header_vector& headers, const uint8_t* tx_payload, size_t tx_size);
+std::vector<std::pair<String, int>> cid_files;
 
 int arduinoSerialPrint(const char* msg){
   return Serial.print(msg);
@@ -140,11 +141,13 @@ void printFolderContents(Folder dir, int indentation = 0) {
   }
 
   // Print files
+  int cnt{1};
   for (UFile file : files) {
     for (int i = 0; i < indentation; i++) {
       Serial.print("  ");
     }
-    Serial.print("[F] ");
+    Serial.print(cnt++);
+    Serial.print(" [F] ");
     Serial.println(file.getPath());
   }
 }
@@ -185,6 +188,87 @@ int readfileArduino( const char* filename, uint8_t* content, size_t length){
 
   file.close();
   return bytesRead;
+}
+
+
+int arduinoGetNumOfCIDFiles(const char *path){
+  initStorageArduino();
+
+  Folder root = storage.getRootFolder();
+  std::vector<UFile> files = root.getFiles();
+  return files.size();
+}
+
+
+String getFileNameFromPath(const String& path) {
+    int found = path.lastIndexOf('/'); 
+    if (found != -1) { 
+        return path.substring(found + 1); 
+    }
+
+    // If "/" is not found, return the whole path
+    return path; 
+}
+
+
+void arduinoGetCIDFiles(const char *path){
+  initStorageArduino();
+
+  Folder root = storage.getRootFolder();
+  std::vector<UFile> files = root.getFiles();
+
+  for(auto f : files){
+    auto fileName = getFileNameFromPath(f.getPathAsString());
+    if(fileName.length() > 20){
+      String time_str = fileName.substring(fileName.length() - 10);
+      cid_files.push_back(std::make_pair(fileName, std::atoi(time_str.c_str())));
+    }
+  }
+
+  return;
+}
+
+
+void arduinoSortCIDFiles(){
+  std::sort(cid_files.begin(), cid_files.end(), [](const std::pair<String, int> &a, const std::pair<String, int> &b){
+    return a.second > b.second;
+  });
+}
+
+
+void arduinoDeleteAllCID(){
+  initStorageArduino();
+
+  Folder root = storage.getRootFolder();
+  std::vector<UFile> files = root.getFiles();
+
+  for(auto f: files){
+    auto fileName = getFileNameFromPath(f.getPathAsString());
+    if(fileName.length() > 25){
+      Serial.print("Deleting file: ");
+      Serial.println(fileName);
+      f.remove();
+    }
+  }
+}
+
+
+/* Delete last element on cid files vector, Return -1 if vector is empty */
+int arduinoDeleteOldestCIDFiles(){
+  initStorageArduino();
+
+  if(cid_files.empty())
+    return -1;
+
+  Folder root = storage.getRootFolder();
+  auto file = root.createFile(cid_files.back().first, FileMode::READ);
+  if(!file.exists())
+    return -1;
+
+  file.remove();
+  cid_files.pop_back();
+  
+  return 0;
 }
 
  

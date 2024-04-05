@@ -122,7 +122,7 @@ void runRDDLSDKNotarizationWorkflow(const char* data_str, size_t data_length){
   char cid_name[100] = {0};
   long curr_time;
   time(&curr_time);
-  sprintf(cid_name, "%s%ld",cid_str, curr_time);
+  sprintf(cid_name, "%s%010ld",cid_str, curr_time);
 
   // store cid
   rddl_writefile( cid_name, (uint8_t*)local_data, data_size );

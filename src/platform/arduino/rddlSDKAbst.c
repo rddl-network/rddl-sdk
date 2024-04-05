@@ -186,16 +186,21 @@ char* getCIDtoBeChallenged(){
 }
 
 int abstGetNumOfCIDFiles(const char* path){
-  int count = 0;
-
-  return count;
+  return arduinoGetNumOfCIDFiles(path);
 }
 
 
 int abstDeleteOldestCIDFile(const char* path){
-  int count = 0;
+  if(arduinoDeleteOldestCIDFiles() != -1)
+    return 0;
 
-  return count;
+  if(num_of_cid_files >= MAX_CID_FILE_SIZE){
+    arduinoGetCIDFiles(path);
+    arduinoSortCIDFiles();
+    if(arduinoDeleteOldestCIDFiles() != -1)
+      return 0;
+  }
+  return -1;
 }
 
 void SubscribeAbst( const char *topic ){
