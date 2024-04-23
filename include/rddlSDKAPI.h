@@ -36,7 +36,7 @@ bool processPoPChallengeResponse( const char* jsonResponse, size_t length );
 bool verifyCIDIntegrity( const char* cid, const char* content );
 bool ChallengeChallengee( const char* cid, const char* address );
 bool amIChallenger();
-int RedeemClaims(void* anyMsg, const char* liquidAddress);
+bool RDDLSDKRedeemClaim(const char* liquidAddress);
 char* getCIDofChallengee();
 
 #ifdef __cplusplus

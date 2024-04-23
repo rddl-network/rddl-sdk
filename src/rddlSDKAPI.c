@@ -254,10 +254,18 @@ char* getCIDofChallengee(){
   return getCIDtoBeChallenged();
 }
 
-int RedeemClaims( void* anyMsg, const char* liquidAddress){
-  Planetmintgo__Dao__MsgCreateRedeemClaim redeemClaim = PLANETMINTGO__DAO__MSG_CREATE_REDEEM_CLAIM__INIT;
-  redeemClaim.creator= sdk_address;
-  redeemClaim.beneficiary = liquidAddress;
-  int res = generateAnyRedeemClaimMsg((Google__Protobuf__Any*) anyMsg, &redeemClaim);
-  return res;
+
+bool RDDLSDKRedeemClaim(const char* liquidAddress){
+  Google__Protobuf__Any anyMsg = GOOGLE__PROTOBUF__ANY__INIT;
+  clearStack();
+  if( !getPlntmntKeys() )
+    return;
+
+  sprintf(responseArr, "Redeem Claims\n");
+  printMsg(responseArr);
+  int status = createRedeemClaimMsg(&anyMsg, liquidAddress );
+  if ( status >= 0 ){
+    status = sendMessages( &anyMsg );
+  }
+  return (status >= 0)
 }

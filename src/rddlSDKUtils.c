@@ -464,3 +464,11 @@ int GetRandomElementFromCIDJSONList(const char* json, char* cidBuffer, size_t bu
     }
     return -1;
 }
+
+int createRedeemClaimMsg( void* anyMsg, const char* liquidAddress){
+  Planetmintgo__Dao__MsgCreateRedeemClaim redeemClaim = PLANETMINTGO__DAO__MSG_CREATE_REDEEM_CLAIM__INIT;
+  redeemClaim.creator= sdk_address;
+  redeemClaim.beneficiary = liquidAddress;
+  int res = generateAnyRedeemClaimMsg((Google__Protobuf__Any*) anyMsg, &redeemClaim);
+  return res;
+}

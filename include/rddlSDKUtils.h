@@ -18,6 +18,7 @@ bool convertStringToInt64( const char* valueString, int64_t* targetValue );
 void checkNumOfCIDFiles(const char* path);
 int GetRandomElementFromCIDJSONList(const char* json, char* cidBuffer, size_t bufferSize) ;
 int CreatePoPResult( void* anyMsg, bool PoPSuccess );
+int createRedeemClaimMsg(void* anyMsg, const char* liquidAddress);
 
 #ifdef __cplusplus
 }
