@@ -257,15 +257,15 @@ char* getCIDofChallengee(){
 
 bool RDDLSDKRedeemClaim(const char* liquidAddress){
   Google__Protobuf__Any anyMsg = GOOGLE__PROTOBUF__ANY__INIT;
-  clearStack();
   if( !getPlntmntKeys() )
     return;
 
   sprintf(responseArr, "Redeem Claims\n");
   printMsg(responseArr);
+  AddLogLineAbst(responseArr);
   int status = createRedeemClaimMsg(&anyMsg, liquidAddress );
   if ( status >= 0 ){
     status = sendMessages( &anyMsg );
   }
-  return (status >= 0)
+  return (status >= 0);
 }
