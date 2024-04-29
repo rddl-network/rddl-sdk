@@ -16,9 +16,11 @@
 
 #include "rddl_types.h"
 #include "planetmintgo.h"
+#include "planetmintgo/dao/redeem_claim.pb-c.h"
 #include "planetmintgo/machine/machine.pb-c.h"
 #include "cosmos/tx/v1beta1/tx.pb-c.h"
 #include "planetmintgo/machine/tx.pb-c.h"
+
 #include "planetmintgo/asset/tx.pb-c.h"
 #include "google/protobuf/any.pb-c.h"
 
@@ -250,4 +252,20 @@ bool ChallengeChallengee( const char* cid, const char* address ){
 
 char* getCIDofChallengee(){
   return getCIDtoBeChallenged();
+}
+
+
+bool RDDLSDKRedeemClaim(const char* liquidAddress){
+  Google__Protobuf__Any anyMsg = GOOGLE__PROTOBUF__ANY__INIT;
+  if( !getPlntmntKeys() )
+    return;
+
+  sprintf(responseArr, "Redeem Claims\n");
+  printMsg(responseArr);
+  AddLogLineAbst(responseArr);
+  int status = createRedeemClaimMsg(&anyMsg, liquidAddress );
+  if ( status >= 0 ){
+    status = sendMessages( &anyMsg );
+  }
+  return (status >= 0);
 }
