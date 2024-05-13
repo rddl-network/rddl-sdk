@@ -464,3 +464,37 @@ void SubscribeAbst( const char *topic ){
 void UnsubscribeAbst( const char *topic ){
   return;
 }
+
+int createAccountCall( const char* baseURI, const char* account_address,
+  const char* machineID, const char* signature, char* http_answ) {
+  
+  const char* curlCommand = "curl -X POST";
+  char url[4096];
+  snprintf(url, sizeof(url), "%s/create-account", baseURI);
+  const char* headers = "-H \"accept: application/json\" -H \"Content-Type: application/json\"";
+  char payload [4000] = {0};
+  char* formatString = "{ \"machine-id\": \"%s\", \"plmnt-address\": \"%s\", \"signature\": \"%s\" }";
+  sprintf( payload, formatString, machineID, account_address, signature);
+
+
+  char curlCmd[8192];
+  snprintf(curlCmd, sizeof(curlCmd), "%s \"%s\" %s -d '%s'", curlCommand, url, headers, payload);
+  printf("\n%s\n", curlCmd);
+
+  static char curlOutput[1024];
+  FILE* pipe = popen(curlCmd, "r");
+
+  if (!pipe) {
+      perror("popen");
+      return false;
+  }
+
+  while (fgets(curlOutput, sizeof(curlOutput), pipe) != NULL) {
+      printf("CURL RESPONSE:\n%s\n", curlOutput);
+  }
+
+  pclose(pipe);
+
+  return 0;
+
+}

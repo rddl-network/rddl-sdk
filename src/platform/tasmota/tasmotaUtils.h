@@ -10,6 +10,7 @@ bool rddlWritefileTasmota( const char* filename, uint8_t* content, size_t length
 int readfileTasmota( const char* filename, uint8_t* content, size_t length);
 char* getGPSstringTasmota();
 int broadcastTransactionTasmota( char* tx_payload, char *http_answ );
+int createAccountCallTasmota( const char* baseURI, const char* account_address, const char* machineID, const char* signature, char* http_answ);
 bool getAccountInfoTasmota( const char* account_address, uint64_t* account_id, uint64_t* sequence );
 bool getPoPInfoTasmota( const char* blockHeight);
 void AddLogLineTasmota(const char* msg, ...);

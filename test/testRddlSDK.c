@@ -125,6 +125,13 @@ void testGetCIDtoBeChallenged(void){
     TEST_ASSERT_EQUAL_INT32( 60, size);
 }
 
+void testCreateAccount(void) {
+    sdkClearStack();
+    sdkGetPlntmntKeys();
+    int result = CreateAccount("http://localhost:8080");
+    TEST_ASSERT_EQUAL_INT32( 0, result);
+}
+
 int main()
 {
     UNITY_BEGIN();
@@ -139,6 +146,7 @@ int main()
     RUN_TEST(testVerifyCIDIntegrity);
     RUN_TEST(testAmIChallanger);
     //RUN_TEST(testGetCIDtoBeChallenged);       //skipped due to service dependency
+    //RUN_TEST(testCreateAccount);              //skipped due to service dependency
 
     return UNITY_END();
 }
