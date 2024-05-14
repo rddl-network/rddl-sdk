@@ -288,7 +288,7 @@ int CreateAccount( const char* baseURI ){
   toHexString( signature_hex, signature, 64*2);
   int result = createAccountCall( baseURI, sdk_address, sdk_machineid_public_key_hex, signature_hex, http_answ);
 
-  if( result == 0 ){
+  if(result == 200){
     sprintf(responseArr, "created account\n");
     AddLogLineAbst(responseArr);
     return 0;

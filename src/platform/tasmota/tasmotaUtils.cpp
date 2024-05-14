@@ -134,8 +134,9 @@ int createAccountCallTasmota( const char* baseURI, const char* account_address, 
 {
   // get account info from planetmint-go
   HTTPClientLight http;
-  String uri = ta_service_base_url + "/create-account";
-  uri = uri + account_address;
+  String uri = baseURI;
+  uri = uri + "/create-account";
+
   http.begin(uri);
   http.addHeader("accept", "application/json");
   http.addHeader("Content-Type", "application/json");
