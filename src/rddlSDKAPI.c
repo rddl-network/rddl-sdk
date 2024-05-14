@@ -156,6 +156,7 @@ bool amIChallenger(){
 bool getPoPFromChain(const char* blockHeight ){
   return getPoPInfo( blockHeight );
 }
+
 bool verifyCIDIntegrity( const char* cid, const char* content )
 {
   bool valid = false;
@@ -258,7 +259,7 @@ char* getCIDofChallengee(){
 bool RDDLSDKRedeemClaim(const char* liquidAddress){
   Google__Protobuf__Any anyMsg = GOOGLE__PROTOBUF__ANY__INIT;
   if( !getPlntmntKeys() )
-    return;
+    return false;
 
   sprintf(responseArr, "Redeem Claims\n");
   printMsg(responseArr);
@@ -268,4 +269,33 @@ bool RDDLSDKRedeemClaim(const char* liquidAddress){
     status = sendMessages( &anyMsg );
   }
   return (status >= 0);
+}
+
+
+int CreateAccount( const char* baseURI ){
+  uint8_t signature[64]={0};
+  char signature_hex[64*2+1]={0};
+  uint8_t hash[32];
+  char http_answ[512];
+  bool ret_bool = getMachineIDSignature(  private_key_machine_id,  sdk_machineid_public_key, signature, hash);
+  if( ! ret_bool )
+  {
+    sprintf(responseArr, "No machine signature\n");
+    AddLogLineAbst(responseArr);
+    return -1;
+  }
+  
+  toHexString( signature_hex, signature, 64*2);
+  int result = createAccountCall( baseURI, sdk_address, sdk_machineid_public_key_hex, signature_hex, http_answ);
+
+  if(result == 200){
+    sprintf(responseArr, "created account\n");
+    AddLogLineAbst(responseArr);
+    return 0;
+  }
+  else {
+    sprintf(responseArr, "error creating account: %s\n", http_answ);
+    AddLogLineAbst(responseArr);
+    return -2;
+  }
 }

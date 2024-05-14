@@ -38,6 +38,7 @@ bool ChallengeChallengee( const char* cid, const char* address );
 bool amIChallenger();
 bool RDDLSDKRedeemClaim(const char* liquidAddress);
 char* getCIDofChallengee();
+int CreateAccount( const char* baseURI );
 
 #ifdef __cplusplus
 }

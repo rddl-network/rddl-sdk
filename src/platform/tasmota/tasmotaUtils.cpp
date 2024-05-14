@@ -130,6 +130,26 @@ int broadcastTransactionTasmota( char* tx_payload, char *http_answ){
   return ret;
 }
 
+int createAccountCallTasmota( const char* baseURI, const char* account_address, const char* machineID, const char* signature, char* http_answ)
+{
+  // get account info from planetmint-go
+  HTTPClientLight http;
+  String uri = baseURI;
+  uri = uri + "/create-account";
+
+  http.begin(uri);
+  http.addHeader("accept", "application/json");
+  http.addHeader("Content-Type", "application/json");
+
+  char* payload = (char*) getStack( 2000 );
+  char* formatString = "{ \"machine-id\": \"%s\", \"plmnt-address\": \"%s\", \"signature\": \"%s\" }";
+  sprintf( payload, formatString, machineID, account_address, signature);
+  
+  int ret = 0;
+  ret = http.POST( (uint8_t*)payload, strlen(payload) );
+  strcpy(http_answ, http.getString().c_str());
+  return ret;
+}
 
 bool getAccountInfoTasmota( const char* account_address, uint64_t* account_id, uint64_t* sequence )
 {

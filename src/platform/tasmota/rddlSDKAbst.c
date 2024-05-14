@@ -192,3 +192,9 @@ char* getCIDtoBeChallenged(){
     return NULL;
   return challengedCID;
 }
+
+int createAccountCall( const char* baseURI, const char* account_address,
+  const char* machineID, const char* signature, char* http_answ) {
+  clearStack();
+  return createAccountCallTasmota( baseURI, account_address, machineID, signature, http_answ);
+}
