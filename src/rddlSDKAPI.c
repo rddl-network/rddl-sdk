@@ -121,6 +121,7 @@ void runRDDLSDKNotarizationWorkflow(const char* data_str, size_t data_length){
 
   size_t data_size = data_length;
   uint8_t* local_data = abstGetStack( data_size+2 );
+  memset(local_data, 0, data_size+2);
   memcpy( local_data, data_str, data_size);
 
   //compute CID
@@ -139,7 +140,7 @@ void runRDDLSDKNotarizationWorkflow(const char* data_str, size_t data_length){
   // register CID
   //registerCID( cid_str );
 
-  sprintf(responseArr, "Notarize: CID Asset %s - file %s\n", cid_str, cid_name);
+  sprintf(responseArr, "Notarize: CID Asset %s - file %s : %s\n", cid_str, cid_name, local_data);
   printMsg(responseArr);
   AddLogLineAbst(responseArr);
 
@@ -173,7 +174,7 @@ bool verifyCIDIntegrity( const char* cid, const char* content )
 bool processPoPChallengeResponse( const char* jsonResponse, size_t length){
     Google__Protobuf__Any anyMsg = GOOGLE__PROTOBUF__ANY__INIT;
 
-
+    AddLogLineAbst( "PoPResponse: %s", jsonResponse);
     char subscriptionTopic[200] = {0};
     sprintf( subscriptionTopic, "stat/%s/POPCHALLENGERESULT", popParticipation.challengee);
     UnsubscribeAbst(subscriptionTopic);
@@ -206,8 +207,11 @@ bool processPoPChallengeResponse( const char* jsonResponse, size_t length){
       return false;
     }
     const uint8_t* contentBytes = fromHexString(dataBuffer);
-    AddLogLineAbst( "RET: %s", jsonResponse);
-    bool PoPSuccess = verifyCIDIntegrity( cidBuffer, contentBytes);
+    uint8_t* convertedContent = sdkGetStack( strlen(contentBytes)+1 );
+    memset( convertedContent, 0, strlen(contentBytes)+1);
+    strcpy(convertedContent, contentBytes);
+    
+    bool PoPSuccess = verifyCIDIntegrity( cidBuffer, convertedContent);
 
     //send out pop result to network
     int resultPoPResult = CreatePoPResult( &anyMsg, PoPSuccess );
