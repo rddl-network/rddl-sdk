@@ -189,7 +189,12 @@ bool getPoPInfoTasmota( const char* blockHeight){
   http.addHeader("Content-Type", "application/json");
 
   int httpResponseCode = http.GET();
-  char* buffer = (char*) getStack(   http.getSize()+ 3);
+  size_t returnedBytes = http.getSize();
+  if( returnedBytes <= 0 )
+    return false;
+  char* buffer = (char*) getStack(   returnedBytes+ 3);
+  if( buffer == NULL )
+    return false;
   char* result = strcpy( buffer, http.getString().c_str() );
   return getPoPInfoFromJSON( result);
 }
@@ -337,11 +342,11 @@ void PublishPayloadTasmota(const char* topic, const char* payload){
   MqttPublishPayload( topic, payload );
 }
 
-char* getCIDsTasmota( const char* address ){
+char* getCIDsTasmota( const char* address, int cidsToBeQueried ){
   char uri[300] = {0};
   HTTPClientLight http;
   const char* cmd = "planetmint/asset/address";
-  sprintf( uri, "%s/%s/%s/%s", tasmotaGetSetting( SDK_SET_PLANETMINT_API), cmd, address, "2000");
+  sprintf( uri, "%s/%s/%s/%i", tasmotaGetSetting( SDK_SET_PLANETMINT_API), cmd, address, cidsToBeQueried);
 
   http.begin(uri);
   http.addHeader("Content-Type", "application/json");
@@ -349,9 +354,14 @@ char* getCIDsTasmota( const char* address ){
   int httpResponseCode = http.GET();
   if (httpResponseCode != 200)
     return NULL;
+  size_t returnedBytes = http.getSize();
+  if( returnedBytes <= 0 )
+    return NULL;
 
-  uint8_t* buffer = getStack( http.getSize() );
-  memcpy( buffer, http.getString().c_str(), http.getSize() );
-
+  uint8_t* buffer = getStack( returnedBytes );
+  if( buffer == NULL )
+    return NULL;
+  
+  memcpy( buffer, http.getString().c_str(), returnedBytes );
   return (char*)buffer;
 }

@@ -85,7 +85,7 @@ int abstDeleteOldestCIDFile(const char* path);
 void SubscribeAbst( const char *topic );
 void UnsubscribeAbst( const char *topic );
 void PublishPayloadAbst(const char* topic, const char* payload);
-char* getCIDtoBeChallenged();
+char* getCIDtoBeChallenged( int cidsToBeQueried );
 int createAccountCall( const char* baseURI, const char* account_address, const char* machineID, const char* signature, char* http_answ);
 
 

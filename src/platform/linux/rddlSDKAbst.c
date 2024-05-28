@@ -357,11 +357,11 @@ default:
 }
 
 
-char* getCIDsLinux( const char* address ){
+char* getCIDsLinux( const char* address, int cidsToBeQueried ){
   // Construct the cURL command
   char uri[200] = {0};
   const char* cmd = "planetmint/asset/get_cids_by_address";
-  snprintf( uri, sizeof(uri), "%s/%s/%s/%s", DEFAULT_API_TEXT, cmd, address, "2000");
+  snprintf( uri, sizeof(uri), "%s/%s/%s/%i", DEFAULT_API_TEXT, cmd, address, cidsToBeQueried);
   snprintf(curlCmd, sizeof(curlCmd),
             "curl -X GET \"%s\" -H \"accept: application/json\"", uri);
 
@@ -380,8 +380,8 @@ char* getCIDsLinux( const char* address ){
   return curlOutput;
 }
 
-char* getCIDtoBeChallenged(){
-  char* jsonObject = getCIDsLinux( (const char*)popParticipation.challengee );
+char* getCIDtoBeChallenged(int cidsToBeQueried){
+  char* jsonObject = getCIDsLinux( (const char*)popParticipation.challengee, cidsToBeQueried );
   memset( challengedCID, 0, 64);
   if (GetRandomElementFromCIDJSONList(jsonObject, challengedCID, 64) < 0)
     return NULL;

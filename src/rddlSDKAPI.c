@@ -255,8 +255,8 @@ bool ChallengeChallengee( const char* cid, const char* address ){
 }
 #endif
 
-char* getCIDofChallengee(){
-  return getCIDtoBeChallenged();
+char* getCIDofChallengee(int cidsToBeQueried){
+  return getCIDtoBeChallenged(cidsToBeQueried);
 }
 
 
