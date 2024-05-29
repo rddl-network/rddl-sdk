@@ -185,9 +185,11 @@ void PublishPayloadAbst(const char* topic, const char* payload){
   PublishPayloadTasmota( topic, payload );
 }
 
-char* getCIDtoBeChallenged(){
+char* getCIDtoBeChallenged(int cidsToBeQueried){
   clearStack();
-  char* jsonObject = getCIDsTasmota( (const char*)popParticipation.challengee );
+  char* jsonObject = getCIDsTasmota( (const char*)popParticipation.challengee, cidsToBeQueried );
+  if( jsonObject == NULL )
+    return NULL;
   if (GetRandomElementFromCIDJSONList(jsonObject, challengedCID, 64) < 0)
     return NULL;
   return challengedCID;

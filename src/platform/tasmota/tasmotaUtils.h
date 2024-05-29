@@ -26,7 +26,7 @@ int tasmotaDeleteOldestCIDFiles();
 void SubscribeTasmota( const char *topic );
 void UnsubscribeTasmota( const char *topic );
 void PublishPayloadTasmota(const char* topic, const char* payload);
-char* getCIDsTasmota( const char* address );
+char* getCIDsTasmota( const char* address, int cidsToBeQueried );
 
 
 

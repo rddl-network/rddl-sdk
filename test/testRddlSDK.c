@@ -118,8 +118,9 @@ void testAmIChallanger(void){
     TEST_ASSERT_FALSE( amIChallenger() );
 }
 void testGetCIDtoBeChallenged(void){
+    int cidsToBeQueried = 2;
     strcpy(popParticipation.challengee, "plmnt15gdanx0nm2lwsx30a6wft7429p32dhzaq37c06");
-    const char* cid = (const char*) getCIDtoBeChallenged();
+    const char* cid = (const char*) getCIDtoBeChallenged(cidsToBeQueried);
     TEST_ASSERT_NOT_NULL( cid );
     int32_t size = (int32_t)strlen( cid );
     TEST_ASSERT_EQUAL_INT32( 60, size);
