@@ -17,10 +17,10 @@
   ],
   "build": {
     "srcDir": ".",
+    "extraScript": "extra.py",
     "srcFilter": [
       "+<src/rddlSDKAPI.c>",
       "+<src/rddlSDKUtils.c>",
-      "+<src/platform/arduino/>",
       "+<libs/librddl/src/>",
       "+<libs/librddl/libs/base64/base64.c>",
       "+<libs/librddl/protoNanoPB>",
@@ -28,10 +28,13 @@
       "+<libs/librddl/libs/trezor-crypto/>",
       "+<libs/librddl/libs/trezor-crypto/chacha20poly1305>",
       "+<libs/librddl/libs/trezor-crypto/ed25519-donna>",
+      "-<src/platform/linux/>",
       "-<libs/librddl/libs/trezor-crypto/aes>",
       "-<libs/librddl/libs/trezor-crypto/tools>",
       "-<libs/librddl/libs/trezor-crypto/gui>",
-      "-<libs/librddl/libs/trezor-crypto/tests>"
+      "-<libs/librddl/libs/trezor-crypto/tests>",
+      "-<src/platform/tasmota/>",
+      "+<src/platform/arduino/>"
     ],
     "includeDir": ".",
     "flags": [

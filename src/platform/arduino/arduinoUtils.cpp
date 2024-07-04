@@ -161,17 +161,20 @@ void printAllFSArduino(){
 
 
 bool writefileArduino( const char* filename, uint8_t* content, size_t length) {
+  bool status{false}; 
   initStorageArduino();
 
   Folder root = storage.getRootFolder();
   UFile file = root.createFile(filename, FileMode::WRITE);
   if(!file.exists())
-    return false;
+    return status;
 
-  file.write(content, length);
+  auto wrtLen = file.write(content, length);
+  if(wrtLen == length)
+    status = true;
 
   file.close();
-  return true;
+  return status;
 }
 
 
