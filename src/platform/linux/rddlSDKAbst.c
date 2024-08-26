@@ -37,6 +37,7 @@
 #include "secp256k1.h"
 
 #include "rddl_types.h"
+#include "keys.h"
 #include "planetmintgo.h"
 #include "planetmintgo/machine/machine.pb-c.h"
 #include "cosmos/tx/v1beta1/tx.pb-c.h"
@@ -48,17 +49,6 @@
 #include "rddlSDKSettings.h"
 #include "rddlSDKUtils.h"
 #include "configFile.h"
-
-uint8_t sdk_priv_key_planetmint[32+1] = {0};
-uint8_t sdk_priv_key_liquid[32+1] = {0};
-uint8_t sdk_pub_key_planetmint[33+1] = {0};
-uint8_t sdk_pub_key_liquid[33+1] = {0};
-uint8_t sdk_machineid_public_key[33+1]={0}; 
-
-char sdk_address[64] = {0};
-char sdk_ext_pub_key_planetmint[EXT_PUB_KEY_SIZE+1] = {0};
-char sdk_ext_pub_key_liquid[EXT_PUB_KEY_SIZE+1] = {0};
-char sdk_machineid_public_key_hex[33*2+1] = {0};
 
 char sdk_periodicity[20] = {0};
 char sdk_planetmintapi[100] = {0};
@@ -87,7 +77,7 @@ bool hasMachineBeenAttested() {
   // Construct the cURL command
   snprintf(curlCmd, sizeof(curlCmd),
             "curl -X GET \"%s/planetmint/machine/get_machine_by_public_key/%s\" -H \"accept: application/json\"",
-            DEFAULT_API_TEXT, sdk_ext_pub_key_planetmint);
+            DEFAULT_API_TEXT, getExtPubKeyPlanetmint());
 
   printf("\n%s\n", curlCmd);
   FILE* pipe = popen(curlCmd, "r");
@@ -213,7 +203,7 @@ bool getAccountInfo( uint64_t* account_id, uint64_t* sequence )
   // Construct the cURL command
   snprintf(curlCmd, sizeof(curlCmd),
             "curl -X GET \"%s/cosmos/auth/v1beta1/account_info/%s\" -H \"accept: application/json\"",
-            DEFAULT_API_TEXT, sdk_address);
+            DEFAULT_API_TEXT, getRDDLAddress());
 
   FILE* pipe = popen(curlCmd, "r");
 
@@ -457,16 +447,16 @@ int abstDeleteOldestCIDFile(const char* path){
   }
 }
 
-void SubscribeAbst( const char *topic ){
+void SubscribeAbst( const char * ){
   return;
 }
 
-void UnsubscribeAbst( const char *topic ){
+void UnsubscribeAbst( const char * ){
   return;
 }
 
 int createAccountCall( const char* baseURI, const char* account_address,
-  const char* machineID, const char* signature, char* http_answ) {
+  const char* machineID, const char* signature, char*) {
   
   const char* curlCommand = "curl -X POST";
   char url[4096];
@@ -496,5 +486,4 @@ int createAccountCall( const char* baseURI, const char* account_address,
   pclose(pipe);
 
   return 0;
-
 }

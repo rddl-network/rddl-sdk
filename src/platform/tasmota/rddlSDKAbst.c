@@ -10,6 +10,7 @@
  
 
 #include "rddl.h"
+#include "keys.h"
 #include "rddl_cid.h"
 #include "bip39.h"
 #include "bip32.h"
@@ -30,18 +31,6 @@
 #include "rddlSDKAbst.h"
 #include "tasmotaUtils.h"
 
-
-uint8_t sdk_priv_key_planetmint[32+1] = {0};
-uint8_t sdk_priv_key_liquid[32+1] = {0};
-uint8_t sdk_pub_key_planetmint[33+1] = {0};
-uint8_t sdk_pub_key_liquid[33+1] = {0};
-uint8_t sdk_machineid_public_key[33+1]={0}; 
-
-
-char sdk_address[64] = {0};
-char sdk_ext_pub_key_planetmint[EXT_PUB_KEY_SIZE+1] = {0};
-char sdk_ext_pub_key_liquid[EXT_PUB_KEY_SIZE+1] = {0};
-char sdk_machineid_public_key_hex[33*2+1] = {0};
 
 char sdk_planetmintapi[100] = {0};
 char sdk_chainid[30] = {0};
@@ -108,7 +97,7 @@ void vAddLogLineAbst(const char* msg, va_list args)
 
 bool getAccountInfo( uint64_t* account_id, uint64_t* sequence )
 {
-  bool ret = getAccountInfoTasmota(sdk_address, account_id, sequence);
+  bool ret = getAccountInfoTasmota(getRDDLAddress(), account_id, sequence);
   if( !ret ){
     sprintf(responseArr, "Account parsing issue\n");
     AddLogLineAbst(responseArr);

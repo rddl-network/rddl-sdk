@@ -28,20 +28,6 @@ extern "C" {
 #endif
 
 
-/* MAKE IT GENERIC */ 
-extern uint8_t sdk_priv_key_planetmint[32+1];
-extern uint8_t sdk_priv_key_liquid[32+1];
-extern uint8_t sdk_pub_key_planetmint[33+1];
-extern uint8_t sdk_pub_key_liquid[33+1];
-extern uint8_t sdk_machineid_public_key[33+1];
-
-
-extern char sdk_address[64];
-extern char sdk_ext_pub_key_planetmint[EXT_PUB_KEY_SIZE+1];
-extern char sdk_ext_pub_key_liquid[EXT_PUB_KEY_SIZE+1];
-extern char sdk_machineid_public_key_hex[33*2+1];
-
-
 extern char sdk_planetmintapi[100];
 extern char sdk_chainid[30];
 extern char sdk_denom[20];
