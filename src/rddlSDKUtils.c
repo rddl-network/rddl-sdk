@@ -11,6 +11,7 @@
 #include "rddl.h"
 #include "rddl_cid.h"
 #include "bip32.h"
+#include "keys.h"
 
 #ifdef LINUX_MACHINE
   #include "base64.h"
@@ -56,7 +57,7 @@ char* create_transaction( void* anyMsg, char* tokenAmount )
   uint8_t* txbytes = NULL;
   size_t tx_size = 0;
   char* chain_id = getSetting( SDK_SET_PLANETMINT_CHAINID ); //getChainID();
-  int ret = prepareTx( (Google__Protobuf__Any*)anyMsg, &coin, sdk_priv_key_planetmint, sdk_pub_key_planetmint, sequence, chain_id, account_id, &txbytes, &tx_size);
+  int ret = prepareTx( (Google__Protobuf__Any*)anyMsg, &coin, (uint8_t*)getPrivKeyPlanetmint(), (uint8_t*)getPubKeyPlanetmint(), sequence, chain_id, account_id, &txbytes, &tx_size);
   if( ret < 0 )
     return NULL;
 
@@ -125,48 +126,11 @@ const uint8_t *fromhex(const char *str) {
 }
 
 
-bool getPlntmntKeys(){
+bool getPlntmntKeysLocal(){
   
   if( readSeed() == NULL )
     return false;
-
-  /* Seedden Priv key ve diger seyleri elde et */
-  HDNode node_planetmint;
-  hdnode_from_seed( secret_seed, SEED_SIZE, SECP256K1_NAME, &node_planetmint);
-  hdnode_private_ckd_prime(&node_planetmint, 44);
-  hdnode_private_ckd_prime(&node_planetmint, 8680);
-  hdnode_private_ckd_prime(&node_planetmint, 0);
-  hdnode_private_ckd(&node_planetmint, 0);
-  hdnode_private_ckd(&node_planetmint, 0);
-  hdnode_fill_public_key(&node_planetmint);
-  /* Global e kopyaliyor pub ve priv keyi */
-  memcpy(sdk_priv_key_planetmint, node_planetmint.private_key, 32);
-  memcpy(sdk_pub_key_planetmint, node_planetmint.public_key, PUB_KEY_SIZE);
-
-
-  /* Seedden Priv key ve diger seyleri elde et */
-  HDNode node_rddl;
-  hdnode_from_seed( secret_seed, SEED_SIZE, SECP256K1_NAME, &node_rddl);
-  hdnode_private_ckd_prime(&node_rddl, 44);
-  hdnode_private_ckd_prime(&node_rddl, 1776);
-  hdnode_private_ckd_prime(&node_rddl, 0);
-  hdnode_private_ckd(&node_rddl, 0);
-  hdnode_private_ckd(&node_rddl, 0);
-  hdnode_fill_public_key(&node_rddl);
-  /* Global e kopyaliyor pub ve priv keyi */
-  memcpy(sdk_priv_key_liquid, node_rddl.private_key, 32);
-  memcpy(sdk_pub_key_liquid, node_rddl.public_key, PUB_KEY_SIZE);
-
-  uint8_t address_bytes[ADDRESS_TAIL] = {0};
-  pubkey2address( sdk_pub_key_planetmint, PUB_KEY_SIZE, address_bytes );
-  getAddressString( address_bytes, sdk_address);
-  uint32_t fingerprint = hdnode_fingerprint(&node_planetmint);
-  hdnode_serialize_public( &node_planetmint, fingerprint, PLANETMINT_PMPB, sdk_ext_pub_key_planetmint, EXT_PUB_KEY_SIZE);
-  hdnode_serialize_public( &node_rddl, fingerprint, VERSION_PUBLIC, sdk_ext_pub_key_liquid, EXT_PUB_KEY_SIZE);
-
-  ecdsa_get_public_key33(&secp256k1, private_key_machine_id, sdk_machineid_public_key);
-  toHexString( sdk_machineid_public_key_hex, sdk_machineid_public_key, 33*2);
-  return true;
+  return getPlntmntKeys();
 }
 
 
@@ -198,7 +162,7 @@ int CreatePoPResult( void* anyMsg, bool PoPSuccess ){
   challenge.success = PoPSuccess;
   challenge.finished = true;
   Planetmintgo__Dao__MsgReportPopResult popResultMsg = PLANETMINTGO__DAO__MSG_REPORT_POP_RESULT__INIT;
-  popResultMsg.creator = sdk_address;
+  popResultMsg.creator = (char*)getRDDLAddress();
   popResultMsg.challenge = &challenge;
 
   int res = generateAnyPoPResultMsg((Google__Protobuf__Any*) anyMsg, &popResultMsg);
@@ -211,7 +175,7 @@ int registerMachine(void* anyMsg, const char* machineCategory, const char* manuf
   char signature_hex[64*2+1]={0};
   uint8_t hash[32];
 
-  bool ret_bool = getMachineIDSignature(  private_key_machine_id,  sdk_machineid_public_key, signature, hash);
+  bool ret_bool = getMachineIDSignature(  private_key_machine_id,  (uint8_t*)getMachinePublicKey(), signature, hash);
   if( ! ret_bool )
   {
     sprintf(responseArr, "No machine signature\n");
@@ -237,19 +201,19 @@ int registerMachine(void* anyMsg, const char* machineCategory, const char* manuf
   metadata.device = deviceDescription;
 
   Planetmintgo__Machine__Machine machine = PLANETMINTGO__MACHINE__MACHINE__INIT;
-  machine.name = (char*)sdk_address;
+  machine.name = (char*)getRDDLAddress();
   
-  machine.issuerplanetmint = sdk_ext_pub_key_planetmint;
-  machine.issuerliquid = sdk_ext_pub_key_liquid;
-  machine.machineid = sdk_machineid_public_key_hex;
+  machine.issuerplanetmint = (char*)getExtPubKeyPlanetmint();
+  machine.issuerliquid = (char*)getExtPubKeyLiquid();
+  machine.machineid = (char*)getMachinePublicKeyHex();
   machine.metadata = &metadata;
   machine.type = RDDL_MACHINE_POWER_SWITCH;
   machine.machineidsignature = signature_hex;
-  machine.address = (char*)sdk_address;
+  machine.address = (char*)getRDDLAddress();
 
  
   Planetmintgo__Machine__MsgAttestMachine machineMsg = PLANETMINTGO__MACHINE__MSG_ATTEST_MACHINE__INIT;
-  machineMsg.creator = (char*)sdk_address;
+  machineMsg.creator = (char*)getRDDLAddress();
   machineMsg.machine = &machine;
   int ret = generateAnyAttestMachineMsg((Google__Protobuf__Any*)anyMsg, &machineMsg);
 
@@ -467,8 +431,9 @@ int GetRandomElementFromCIDJSONList(const char* json, char* cidBuffer, size_t bu
 
 int createRedeemClaimMsg( void* anyMsg, const char* liquidAddress){
   Planetmintgo__Dao__MsgCreateRedeemClaim redeemClaim = PLANETMINTGO__DAO__MSG_CREATE_REDEEM_CLAIM__INIT;
-  redeemClaim.creator= sdk_address;
-  redeemClaim.beneficiary = liquidAddress;
+
+  redeemClaim.creator= (char*)getRDDLAddress();
+  redeemClaim.beneficiary = (char*)liquidAddress;
   int res = generateAnyRedeemClaimMsg((Google__Protobuf__Any*) anyMsg, &redeemClaim);
   return res;
 }

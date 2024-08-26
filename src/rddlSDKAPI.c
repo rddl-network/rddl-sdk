@@ -10,6 +10,7 @@
 
 #include "rddl.h"
 #include "rddl_cid.h"
+#include "keys.h"
 #include "bip32.h"
 #include "curves.h"
 #include "secp256k1.h"
@@ -29,13 +30,13 @@
 #include "rddlSDKAPI.h"
 
 
-const char* sdkGetRDDLAddress()          { return (const char*) sdk_address; }
-const char* sdkGetExtPubKeyLiquid()      { return (const char*)sdk_ext_pub_key_liquid; }
-const char* sdkGetExtPubKeyPlanetmint()  { return (const char*)sdk_ext_pub_key_planetmint; }
-const uint8_t* sdkGetPrivKeyLiquid()     { return (const uint8_t*)sdk_priv_key_liquid; }
-const uint8_t* sdkGetPrivKeyPlanetmint() { return (const uint8_t*)sdk_priv_key_planetmint; }
-const char* sdkGetMachinePublicKey()     { return (const char*) sdk_machineid_public_key_hex; }
-bool  sdkGetPlntmntKeys(){ return getPlntmntKeys(); }
+const char* sdkGetRDDLAddress()          { return getRDDLAddress(); }
+const char* sdkGetExtPubKeyLiquid()      { return getExtPubKeyLiquid(); }
+const char* sdkGetExtPubKeyPlanetmint()  { return getExtPubKeyPlanetmint(); }
+const uint8_t* sdkGetPrivKeyLiquid()     { return getPrivKeyLiquid(); }
+const uint8_t* sdkGetPrivKeyPlanetmint() { return getPrivKeyPlanetmint(); }
+const char* sdkGetMachinePublicKey()     { return getMachinePublicKeyHex(); }
+bool  sdkGetPlntmntKeys(){ return getPlntmntKeysLocal(); }
 
 int sdkReadFile( const char* filename, uint8_t* content, size_t length){
   return readfile(filename, content, length);
@@ -57,10 +58,10 @@ char* sdkSetSeed(char* pMnemonic, size_t len){
   char* mnemonic = NULL;
   
   if(len)
-    mnemonic = (char*)setSeed( pMnemonic, len );
+    mnemonic = (char*)setSeed( pMnemonic );
   else{
     mnemonic = (char*)getMnemonic();
-    mnemonic = (char*)setSeed( mnemonic, strlen(mnemonic) );
+    mnemonic = (char*)setSeed( mnemonic );
   }  
 
   storeSeed();
@@ -98,7 +99,7 @@ void sdkClearStack(){
 void runRDDLSDKMachineAttestation(const char* machineCategory, const char* manufacturer, const char* cid ){
   Google__Protobuf__Any anyMsg = GOOGLE__PROTOBUF__ANY__INIT;
   clearStack();
-  if( !getPlntmntKeys() )
+  if( !getPlntmntKeysLocal() )
     return;
 
   sprintf(responseArr, "Register: Machine\n");
@@ -113,7 +114,7 @@ void runRDDLSDKMachineAttestation(const char* machineCategory, const char* manuf
 void runRDDLSDKNotarizationWorkflow(const char* data_str, size_t data_length){
   Google__Protobuf__Any anyMsg = GOOGLE__PROTOBUF__ANY__INIT;
   abstClearStack();
-  if( !getPlntmntKeys() )
+  if( !getPlntmntKeysLocal() )
     return;
 
   if( !hasMachineBeenAttested() )
@@ -144,13 +145,13 @@ void runRDDLSDKNotarizationWorkflow(const char* data_str, size_t data_length){
   printMsg(responseArr);
   AddLogLineAbst(responseArr);
 
-  generateAnyCIDAttestMsg(&anyMsg, cid_str, sdk_priv_key_planetmint, sdk_pub_key_planetmint, sdk_address, sdk_ext_pub_key_planetmint );
+  generateAnyCIDAttestMsg(&anyMsg, cid_str, getRDDLAddress() );
   sendMessages( &anyMsg );
 }
 
 bool amIChallenger(){
-  if( getPlntmntKeys() )
-    return (strcmp( (const char*)sdk_address, (const char*)popParticipation.challenger ) == 0);
+  if( getPlntmntKeysLocal() )
+    return (strcmp( getRDDLAddress(), (const char*)popParticipation.challenger ) == 0);
   return false;
 }
 
@@ -183,35 +184,35 @@ bool processPoPChallengeResponse( const char* jsonResponse, size_t length){
     uint8_t* dataBuffer = sdkGetStack( length );
     uint8_t* cidBuffer = sdkGetStack( 64 );
     uint8_t encoding[10] = {0};
-    int failed = copyJsonValueString( dataBuffer, length, jsonResponse, "data");
+    int failed = copyJsonValueString( (char*)dataBuffer, length, jsonResponse, "data");
     if( failed ) {
       AddLogLineAbst( "RET: could not extract data");
       return false;
     }
-    failed = copyJsonValueString( encoding, 10, jsonResponse, "encoding");
+    failed = copyJsonValueString( (char*)encoding, 10, jsonResponse, "encoding");
     if( failed ) {
       AddLogLineAbst( "RET: could not extract encoding");
       return false;
     }
-    failed = copyJsonValueString( cidBuffer, 64, jsonResponse, "cid");
+    failed = copyJsonValueString( (char*)cidBuffer, 64, jsonResponse, "cid");
     if( failed ) {
       AddLogLineAbst( "RET: could not extract CID");
       return false;
     }
-    if (strcmp( "hex", encoding) != 0 ){
+    if (strcmp( "hex", (const char*)encoding) != 0 ){
       AddLogLineAbst( "RET: unsupported encoding %s", encoding);
       return false;
     }
-    if( strcmp( challengedCID, cidBuffer ) != 0 ){
+    if( strcmp( (const char*)challengedCID, (const char*)cidBuffer ) != 0 ){
       AddLogLineAbst( "RET: wrong CID - exp: %s deliviered: %s ", challengedCID, cidBuffer);
       return false;
     }
-    const uint8_t* contentBytes = fromHexString(dataBuffer);
-    uint8_t* convertedContent = sdkGetStack( strlen(contentBytes)+1 );
-    memset( convertedContent, 0, strlen(contentBytes)+1);
-    strcpy(convertedContent, contentBytes);
+    const uint8_t* contentBytes = fromHexString((const char*)dataBuffer);
+    uint8_t* convertedContent = sdkGetStack( strlen((const char*)contentBytes)+1 );
+    memset( convertedContent, 0, strlen((const char*) contentBytes)+1);
+    strcpy((char*)convertedContent, (const char*)contentBytes);
     
-    bool PoPSuccess = verifyCIDIntegrity( cidBuffer, convertedContent);
+    bool PoPSuccess = verifyCIDIntegrity( (const char*)cidBuffer, (const char*)convertedContent);
 
     //send out pop result to network
     int resultPoPResult = CreatePoPResult( &anyMsg, PoPSuccess );
@@ -262,7 +263,7 @@ char* getCIDofChallengee(int cidsToBeQueried){
 
 bool RDDLSDKRedeemClaim(const char* liquidAddress){
   Google__Protobuf__Any anyMsg = GOOGLE__PROTOBUF__ANY__INIT;
-  if( !getPlntmntKeys() )
+  if( !getPlntmntKeysLocal() )
     return false;
 
   sprintf(responseArr, "Redeem Claims\n");
@@ -281,7 +282,7 @@ int CreateAccount( const char* baseURI ){
   char signature_hex[64*2+1]={0};
   uint8_t hash[32];
   char http_answ[512];
-  bool ret_bool = getMachineIDSignature(  private_key_machine_id,  sdk_machineid_public_key, signature, hash);
+  bool ret_bool = getMachineIDSignature(  private_key_machine_id,  (uint8_t*)getMachinePublicKey(), signature, hash);
   if( ! ret_bool )
   {
     sprintf(responseArr, "No machine signature\n");
@@ -290,7 +291,7 @@ int CreateAccount( const char* baseURI ){
   }
   
   toHexString( signature_hex, signature, 64*2);
-  int result = createAccountCall( baseURI, sdk_address, sdk_machineid_public_key_hex, signature_hex, http_answ);
+  int result = createAccountCall( baseURI, getRDDLAddress(), getMachinePublicKeyHex(), signature_hex, http_answ);
 
   if(result == 200){
     sprintf(responseArr, "created account\n");
